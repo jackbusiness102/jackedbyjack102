@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JackedByJack — Coach Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--bg2:#111;--bg3:#181818;--bg4:#202020;--bg5:#2a2a2a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--border3:rgba(255,255,255,0.18);
+  --txt:#e8e8e8;--txt2:#888;--txt3:#555;
+  --g:#39d98a;--gd:rgba(57,217,138,0.14);--gdd:rgba(57,217,138,0.07);--gdark:#27ae60;
+  --b:#5b8dee;--bd:rgba(91,141,238,0.13);
+  --o:#f5a623;--od:rgba(245,166,35,0.13);
+  --r:#e05c5c;--rd:rgba(224,92,92,0.12);
+  --p:#a78bfa;--pd:rgba(167,139,250,0.13);
+  --rad:8px;--rad2:12px;--rad3:16px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;--mono:'Consolas','Courier New',monospace;
+  --shadow:0 2px 20px rgba(0,0,0,0.4);--shadow2:0 8px 40px rgba(0,0,0,0.6);
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--font);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.main{flex:1;overflow-y:auto;scroll-behavior:smooth}
+.main::-webkit-scrollbar{width:4px}
+.main::-webkit-scrollbar-thumb{background:var(–bg5);border-radius:2px}
+.page{display:none;padding:28px 32px;animation:fadeUp .22s cubic-bezier(.22,1,.36,1)}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SIDEBAR ── */
+.sidebar{width:210px;background:var(–bg2);border-right:1px solid var(–border);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s}
+.sb-logo{padding:22px 18px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(–border);margin-bottom:6px}
+.sb-mark{width:32px;height:32px;background:var(–g);color:#000;font-weight:700;font-size:11px;border-radius:var(–rad);display:flex;align-items:center;justify-content:center;letter-spacing:.5px;flex-shrink:0;box-shadow:0 0 16px rgba(57,217,138,.35)}
+.sb-title{font-size:14px;font-weight:600;letter-spacing:-.2px}
+.sb-title span{color:var(–g)}
+.sb-nav{flex:1;padding:4px 8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(–rad);color:var(–txt2);font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .15s;margin-bottom:1px;position:relative}
+.nav-item svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nav-item:hover{background:var(–bg3);color:var(–txt)}
+.nav-item.active{background:var(–gd);color:var(–g);font-weight:600}
+.nav-item.active::before{content:’’;position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:16px;background:var(–g);border-radius:0 2px 2px 0}
+.nav-badge{margin-left:auto;background:var(–g);color:#000;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;font-family:var(–mono)}
+.sb-section{padding:4px 18px 4px;font-size:10px;font-weight:600;color:var(–txt3);letter-spacing:.8px;text-transform:uppercase;margin-top:8px}
+.sb-foot{padding:14px;border-top:1px solid var(–border)}
+.coach-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(–bg3);border-radius:var(–rad);border:1px solid var(–border)}
+.coach-av{width:30px;height:30px;border-radius:50%;background:var(–gd);color:var(–g);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:1px solid rgba(57,217,138,.3)}
+.coach-info .name{font-size:12px;font-weight:600}
+.coach-info .role{font-size:10px;color:var(–txt3)}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;flex-wrap:wrap}
+.ph h1{font-size:20px;font-weight:700;letter-spacing:-.4px;margin-bottom:2px}
+.ph-sub{font-size:12px;color:var(–txt2)}
+.ph-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ── CARDS ── */
+.card{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad2);padding:18px 20px;margin-bottom:14px;transition:border-color .2s}
+.card:hover{border-color:var(–border2)}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px}
+.ch h3{font-size:13px;font-weight:600;color:var(–txt)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* ── STAT CARDS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.sc{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad2);padding:16px 18px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;cursor:default}
+.sc:hover{transform:translateY(-2px);border-color:var(–border2)}
+.sc::after{content:’’;position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(–accent,var(–g)),transparent);opacity:.4}
+.sc.blue::after{–accent:var(–b)}
+.sc.orange::after{–accent:var(–o)}
+.sc.purple::after{–accent:var(–p)}
+.sc-icon{width:28px;height:28px;border-radius:var(–rad);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.sc-icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sc-icon.g{background:var(–gd);color:var(–g)}
+.sc-icon.b{background:var(–bd);color:var(–b)}
+.sc-icon.o{background:var(–od);color:var(–o)}
+.sc-icon.p{background:var(–pd);color:var(–p)}
+.sc-val{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:1px}
+.sc-lbl{font-size:11px;color:var(–txt2);margin-bottom:3px}
+.sc-trend{font-size:10px;font-family:var(–mono)}
+.sc-trend.up{color:var(–g)}
+.sc-trend.nt{color:var(–txt3)}
+
+/* ── BADGES ── */
+.badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;font-family:var(–mono);letter-spacing:.2px}
+.bg{background:var(–gd);color:var(–g)}
+.bb{background:var(–bd);color:var(–b)}
+.bo{background:var(–od);color:var(–o)}
+.br{background:var(–rd);color:var(–r)}
+.bp{background:var(–pd);color:var(–p)}
+.bm{background:var(–bg3);color:var(–txt2);border:1px solid var(–border)}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:var(–rad);font-size:12px;font-family:var(–font);font-weight:600;cursor:pointer;border:1px solid var(–border2);background:var(–bg3);color:var(–txt);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(–bg4);border-color:var(–border3)}
+.btn:active{transform:scale(.97)}
+.btn-g{background:var(–g);color:#000;border-color:var(–g)}
+.btn-g:hover{background:var(–gdark);border-color:var(–gdark)}
+.btn-ghost{background:transparent;border-color:transparent}
+.btn-ghost:hover{background:var(–bg3);border-color:var(–border)}
+.btn-sm{padding:5px 11px;font-size:11px}
+.btn-icon{width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center}
+.btn-icon svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn-danger{color:var(–r)}
+.btn-danger:hover{background:var(–rd);border-color:var(–r)}
+
+/* ── FORMS ── */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.fg label{font-size:11px;color:var(–txt2);font-weight:600;letter-spacing:.2px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.inp,.sel,.ta{background:var(–bg3);border:1px solid var(–border);border-radius:var(–rad);color:var(–txt);font-family:var(–font);font-size:12px;padding:7px 10px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(–g);box-shadow:0 0 0 3px rgba(57,217,138,.08)}
+.ta{resize:vertical;min-height:54px;line-height:1.5}
+.sel{cursor:pointer;appearance:none;background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘10’ viewBox=‘0 0 20 20’%3E%3Cpath fill=’%23666’ d=‘M5 7l5 5 5-5’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:right 8px center;padding-right:26px}
+select option{background:#1a1a1a}
+.inp-sm{background:var(–bg3);border:1px solid var(–border);border-radius:var(–rad);color:var(–txt);font-size:11px;padding:5px 8px;outline:none;width:130px}
+.inp-sm:focus{border-color:var(–g)}
+
+/* ── SEARCH ── */
+.search{display:flex;align-items:center;gap:8px;background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad);padding:0 12px;margin-bottom:16px;transition:border-color .15s}
+.search:focus-within{border-color:var(–g)}
+.search svg{width:13px;height:13px;fill:none;stroke:var(–txt3);stroke-width:1.8;stroke-linecap:round;flex-shrink:0}
+.search input{flex:1;background:none;border:none;color:var(–txt);font-family:var(–font);font-size:12px;padding:9px 0;outline:none}
+.search input::placeholder{color:var(–txt3)}
+
+/* ── CLIENT CARDS ── */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.cc{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad2);padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.cc:hover{border-color:var(–border3);transform:translateY(-2px);box-shadow:var(–shadow)}
+.cc.me{border-color:rgba(57,217,138,.25);background:linear-gradient(135deg,var(–bg2),rgba(57,217,138,.03))}
+.cc.me::before{content:‘YOU’;position:absolute;top:10px;right:10px;font-size:9px;font-weight:700;color:var(–g);font-family:var(–mono);letter-spacing:.5px}
+.cav{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-bottom:10px;font-family:var(–mono);border:1px solid transparent}
+.cn{font-size:13px;font-weight:600;margin-bottom:2px}
+.cm{font-size:11px;color:var(–txt2);margin-bottom:8px}
+.pw{margin-top:8px}
+.pl{display:flex;justify-content:space-between;font-size:10px;color:var(–txt3);margin-bottom:4px}
+.pb{height:3px;background:var(–bg4);border-radius:2px;overflow:hidden}
+.pf{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.pf.g{background:var(–g)}
+.pf.b{background:var(–b)}
+.pf.o{background:var(–o)}
+
+/* ── SESSION ROWS ── */
+.sr{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(–border)}
+.sr:last-child{border-bottom:none}
+.sr-time{font-size:11px;color:var(–txt3);width:40px;flex-shrink:0;font-family:var(–mono)}
+.sr-info{flex:1}
+.sr-name{font-size:12px;font-weight:600;margin-bottom:1px}
+.sr-type{font-size:10px;color:var(–txt2)}
+.sr-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── ACTIVITY ── */
+.al{display:flex;flex-direction:column}
+.ai{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(–border);font-size:12px;align-items:flex-start}
+.ai:last-child{border-bottom:none}
+.ai-time{font-size:10px;color:var(–txt3);min-width:60px;flex-shrink:0;font-family:var(–mono);padding-top:1px}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(–g);flex-shrink:0;margin-top:5px}
+
+/* ── EXERCISE LOGGER ── */
+.ex-head{display:grid;grid-template-columns:1fr 55px 55px 80px 28px;gap:6px;font-size:10px;color:var(–txt3);margin-bottom:5px;padding:0 2px;font-weight:600;letter-spacing:.3px}
+.ex-row{display:grid;grid-template-columns:1fr 55px 55px 80px 28px;gap:6px;align-items:center;margin-bottom:5px}
+.ex-row input,.ex-row select{background:var(–bg3);border:1px solid var(–border);border-radius:var(–rad);color:var(–txt);font-family:var(–font);font-size:11px;padding:5px 7px;width:100%;outline:none;text-align:center;transition:border-color .15s}
+.ex-row select{text-align:left}
+.ex-row input:focus,.ex-row select:focus{border-color:var(–g)}
+.rm-ex{background:none;border:none;color:var(–txt3);cursor:pointer;font-size:15px;padding:0;display:flex;align-items:center;justify-content:center;transition:color .15s;width:28px;height:28px;border-radius:4px}
+.rm-ex:hover{color:var(–r);background:var(–rd)}
+.btn-row{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+
+/* ── HISTORY ── */
+.hi{padding:10px 0;border-bottom:1px solid var(–border)}
+.hi:last-child{border-bottom:none}
+.hih{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.hin{font-size:12px;font-weight:600}
+.hid{font-size:10px;color:var(–txt3);font-family:var(–mono)}
+.hit{font-size:11px;color:var(–txt2);margin-bottom:4px}
+.hex{display:flex;flex-wrap:wrap;gap:3px}
+.ec{padding:2px 6px;background:var(–bg3);border-radius:3px;font-size:10px;color:var(–txt2);font-family:var(–mono)}
+
+/* ── CHART ── */
+.chart-wrap{padding:4px 0 10px}
+canvas{display:block;width:100%}
+.weigh-row{display:flex;gap:6px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(–border)}
+
+/* ── GOALS ── */
+.goal{margin-bottom:14px}
+.goal:last-child{margin-bottom:0}
+.goal-lbl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.goal-pct{font-size:11px;color:var(–txt2);font-family:var(–mono)}
+
+/* ── PRs ── */
+.pr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(–border);font-size:12px}
+.pr:last-child{border-bottom:none}
+.pr-lift{color:var(–txt2)}
+.pr-val{font-family:var(–mono);font-weight:600;color:var(–g)}
+.add-pr-row{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(–border);flex-wrap:wrap}
+
+/* ── SCHEDULE ── */
+.sch-card{padding:0;overflow-x:auto}
+.sch-table{display:grid;grid-template-columns:60px repeat(7,1fr);min-width:580px}
+.sch-hd{background:var(–bg3);font-size:11px;font-weight:600;color:var(–txt2);padding:9px 6px;text-align:center;border-bottom:1px solid var(–border)}
+.sch-hd:first-child{border-right:1px solid var(–border)}
+.sch-tm{padding:6px 8px;font-size:10px;color:var(–txt3);border-right:1px solid var(–border);display:flex;align-items:center;font-family:var(–mono);border-bottom:1px solid var(–border)}
+.sch-cell{padding:4px;border-bottom:1px solid var(–border);border-right:1px solid rgba(255,255,255,.02);min-height:40px;position:relative}
+.sch-block{padding:4px 6px;border-radius:4px;font-size:10px;font-weight:600;line-height:1.3;cursor:pointer;transition:opacity .15s}
+.sch-block:hover{opacity:.8}
+.sch-block.g{background:var(–gd);color:var(–g)}
+.sch-block.b{background:var(–bd);color:var(–b)}
+.sch-block.o{background:var(–od);color:var(–o)}
+.legend{display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(–txt2);flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%}
+
+/* ── NOTES / NUTRITION ── */
+.note-card{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad2);padding:14px 16px;margin-bottom:8px;transition:border-color .2s;cursor:pointer}
+.note-card:hover{border-color:var(–border2)}
+.note-title{font-size:12px;font-weight:600;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.note-preview{font-size:11px;color:var(–txt2);line-height:1.5}
+.note-date{font-size:10px;color:var(–txt3);font-family:var(–mono);margin-top:4px}
+
+/* ── MACROS ── */
+.macro-ring{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.macro-item{text-align:center}
+.macro-val{font-size:18px;font-weight:700;font-family:var(–mono)}
+.macro-lbl{font-size:10px;color:var(–txt2)}
+.macro-bar{width:100%;height:4px;background:var(–bg4);border-radius:2px;margin-top:3px;overflow:hidden}
+.macro-fill{height:100%;border-radius:2px;transition:width .6s}
+
+/* ── MODAL ── */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:100;animation:fadeIn .15s}
+.mbg.open{display:block}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);background:var(–bg3);border:1px solid var(–border2);border-radius:var(–rad3);padding:22px 24px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;z-index:101;box-shadow:var(–shadow2)}
+.modal.open{display:block;animation:slideUp .2s cubic-bezier(.22,1,.36,1)}
+@keyframes slideUp{from{opacity:0;transform:translate(-50%,-44%)}to{opacity:1;transform:translate(-50%,-46%)}}
+.modal-wide{width:560px}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mh h2{font-size:15px;font-weight:700}
+.mc{background:none;border:none;color:var(–txt3);font-size:18px;cursor:pointer;padding:4px;border-radius:4px;transition:all .15s;line-height:1}
+.mc:hover{color:var(–txt);background:var(–bg4)}
+.mf{display:flex;justify-content:flex-end;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(–border)}
+
+/* ── DETAIL ── */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.df{background:var(–bg2);border-radius:var(–rad);padding:8px 12px;border:1px solid var(–border)}
+.dfl{font-size:10px;color:var(–txt3);margin-bottom:2px;font-weight:600;letter-spacing:.2px}
+.dfv{font-size:13px;font-weight:600}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(–bg3);border:1px solid var(–border2);border-radius:var(–rad);padding:10px 14px;font-size:12px;z-index:200;display:flex;align-items:center;gap:8px;transform:translateY(60px);opacity:0;transition:all .22s cubic-bezier(.22,1,.36,1);box-shadow:var(–shadow)}
+.toast.show{transform:translateY(0);opacity:1}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(–g);flex-shrink:0}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;background:var(–bg3);border-radius:var(–rad);padding:3px;margin-bottom:16px;border:1px solid var(–border)}
+.tab{flex:1;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;text-align:center;color:var(–txt2);transition:all .15s}
+.tab.active{background:var(–bg2);color:var(–txt);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+/* ── SPLIT TRACKER ── */
+.split-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.split-day{background:var(–bg3);border:1px solid var(–border);border-radius:var(–rad);padding:10px;text-align:center;transition:all .2s;cursor:pointer}
+.split-day.active-day{border-color:var(–g);background:var(–gdd)}
+.split-day.done{border-color:rgba(57,217,138,.2);background:var(–gdd)}
+.split-day .sd-label{font-size:10px;color:var(–txt2);margin-bottom:2px}
+.split-day .sd-name{font-size:11px;font-weight:600}
+.split-day .sd-icon{font-size:18px;margin-bottom:4px}
+
+/* ── NUTRITION ── */
+.meal-day{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad2);padding:16px 18px;margin-bottom:12px}
+.meal-day-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.meal-day-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.meal-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(–border)}
+.meal-row:last-child{border-bottom:none}
+.meal-time-badge{background:var(–bg3);border:1px solid var(–border);border-radius:var(–rad);padding:3px 8px;font-size:10px;font-family:var(–mono);color:var(–txt2);flex-shrink:0;min-width:50px;text-align:center}
+.meal-info{flex:1}
+.meal-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.meal-foods{font-size:11px;color:var(–txt2);line-height:1.6}
+.meal-macros{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.mm{padding:2px 6px;border-radius:3px;font-size:10px;font-family:var(–mono);font-weight:500}
+.mm-p{background:rgba(57,217,138,.12);color:var(–g)}
+.mm-c{background:rgba(91,141,238,.12);color:var(–b)}
+.mm-f{background:rgba(245,166,35,.12);color:var(–o)}
+.mm-cal{background:var(–bg4);color:var(–txt2)}
+.macro-ring-wrap{display:flex;gap:20px;padding:12px 0;flex-wrap:wrap}
+.macro-ring-item{text-align:center;flex:1;min-width:80px}
+.macro-num{font-size:20px;font-weight:700;font-family:var(–mono)}
+.macro-sub{font-size:10px;color:var(–txt2);margin-top:1px}
+.macro-prog{height:4px;border-radius:2px;margin-top:6px;background:var(–bg4);overflow:hidden}
+.macro-fill{height:100%;border-radius:2px}
+.template-card{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad2);padding:16px 18px;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.template-card:hover{border-color:var(–border3);transform:translateY(-1px)}
+.template-card h4{font-size:13px;font-weight:600;margin-bottom:4px}
+.template-card p{font-size:11px;color:var(–txt2);line-height:1.5}
+.template-tag{display:inline-flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.food-row-inp{display:grid;grid-template-columns:1fr 70px 60px 60px 60px 24px;gap:6px;align-items:center;margin-bottom:5px}
+.food-row-inp input{background:var(–bg2);border:1px solid var(–border);border-radius:var(–rad);color:var(–txt);font-size:11px;padding:5px 7px;width:100%;outline:none}
+.food-row-inp input:focus{border-color:var(–g)}
+.food-head{display:grid;grid-template-columns:1fr 70px 60px 60px 60px 24px;gap:6px;font-size:10px;color:var(–txt3);font-weight:600;letter-spacing:.3px;margin-bottom:4px;padding:0 2px}
+
+/* ── MOBILE NAV ── */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(–bg2);border-top:1px solid var(–border);padding:8px 0 12px;z-index:50;backdrop-filter:blur(10px)}
+.mob-nav-inner{display:flex;justify-content:space-around}
+.mob-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;color:var(–txt3);cursor:pointer;border-radius:var(–rad);transition:color .15s;font-size:9px;font-weight:600}
+.mob-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mob-btn.active{color:var(–g)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.two{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){
+.sidebar{display:none}
+.mob-nav{display:block}
+.page{padding:16px 14px 80px}
+.stats{grid-template-columns:1fr 1fr}
+.cgrid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.split-grid{grid-template-columns:repeat(2,1fr)}
+.three{grid-template-columns:1fr}
+}
+</style>
+
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-mark">JBJ</div>
+    <div class="sb-title"><span>Jacked</span>ByJack</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <a class="nav-item active" data-page="dashboard" onclick="nav('dashboard',this)">
+      <svg viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" data-page="clients" onclick="nav('clients',this)">
+      <svg viewBox="0 0 20 20"><circle cx="8" cy="6" r="3"/><path d="M2 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="15" cy="7" r="2.5"/><path d="M14 16h4c0-2.2-1.3-4-3-4.5"/></svg>
+      Clients
+      <span class="nav-badge" id="nb-clients">9</span>
+    </a>
+    <div class="sb-section">Training</div>
+    <a class="nav-item" data-page="workouts" onclick="nav('workouts',this)">
+      <svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg>
+      Log Workout
+    </a>
+    <a class="nav-item" data-page="mysplit" onclick="nav('mysplit',this)">
+      <svg viewBox="0 0 20 20"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M7 3v14M2 8h5M2 12h5"/></svg>
+      My Split
+    </a>
+    <a class="nav-item" data-page="progress" onclick="nav('progress',this)">
+      <svg viewBox="0 0 20 20"><polyline points="3,14 7,9 11,11 15,5 17,7"/><line x1="3" y1="17" x2="17" y2="17"/></svg>
+      Progress
+    </a>
+    <div class="sb-section">Planning</div>
+    <a class="nav-item" data-page="schedule" onclick="nav('schedule',this)">
+      <svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="6"/><line x1="13" y1="2" x2="13" y2="6"/></svg>
+      Schedule
+    </a>
+    <a class="nav-item" data-page="notes" onclick="nav('notes',this)">
+      <svg viewBox="0 0 20 20"><path d="M4 4h12v9l-3 3H4z"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="11" x2="11" y2="11"/></svg>
+      Notes
+    </a>
+    <a class="nav-item" data-page="nutrition" onclick="nav('nutrition',this)">
+      <svg viewBox="0 0 20 20"><path d="M10 3c-3 0-6 2.5-6 6 0 2.5 1.5 4.5 3 5.5V17h6v-2.5c1.5-1 3-3 3-5.5 0-3.5-3-6-6-6z"/><line x1="10" y1="9" x2="10" y2="13"/></svg>
+      Nutrition
+    </a>
+  </nav>
+  <div class="sb-foot">
+    <div class="coach-pill">
+      <div class="coach-av">JB</div>
+      <div class="coach-info">
+        <div class="name">Jack</div>
+        <div class="role">Head coach · Cape Town</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+
+<main class="main">
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+
+<section class="page active" id="page-dashboard">
+  <div class="ph">
+    <div><h1 id="dash-greeting">Good morning, Jack 👋</h1><p class="ph-sub" id="dash-date"></p></div>
+    <div class="ph-actions">
+      <button class="btn btn-sm btn-ghost" onclick="nav('mysplit',document.querySelector('[data-page=mysplit]'))">My split</button>
+      <button class="btn btn-sm btn-g" onclick="nav('workouts',document.querySelector('[data-page=workouts]'))">+ Log session</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="sc"><div class="sc-icon g"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div class="sc-val" id="s-clients">9</div><div class="sc-lbl">Active clients</div><div class="sc-trend up">↑ 1 this month</div></div>
+    <div class="sc blue"><div class="sc-icon b"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg></div><div class="sc-val" id="s-week">14</div><div class="sc-lbl">Sessions this week</div><div class="sc-trend nt" id="s-remaining">3 remaining</div></div>
+    <div class="sc orange"><div class="sc-icon o"><svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg></div><div class="sc-val" id="s-logged">0</div><div class="sc-lbl">Total sessions logged</div><div class="sc-trend nt">all time</div></div>
+    <div class="sc purple"><div class="sc-icon p"><svg viewBox="0 0 20 20"><polyline points="3,14 7,9 11,11 15,5 17,7"/></svg></div><div class="sc-val">87%</div><div class="sc-lbl">Avg adherence</div><div class="sc-trend up">↑ 4% vs last month</div></div>
+  </div>
+  <div class="two">
+    <div class="card">
+      <div class="ch"><h3>Today's sessions</h3><span class="badge bg" id="td-count">0 today</span></div>
+      <div id="td-sessions"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Recent activity</h3><button class="btn btn-sm btn-ghost" onclick="nav('workouts',document.querySelector('[data-page=workouts]'))">View all</button></div>
+      <div class="al" id="activity"></div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="card">
+      <div class="ch"><h3>My next session</h3></div>
+      <div id="next-session-preview"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Quick stats</h3></div>
+      <div id="quick-stats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ CLIENTS ═══════════════ -->
+
+<section class="page" id="page-clients">
+  <div class="ph">
+    <div><h1>Clients</h1><p class="ph-sub">Your coaching roster</p></div>
+    <div class="ph-actions">
+      <select class="sel" id="client-filter" onchange="renderClients()" style="width:120px">
+        <option value="all">All clients</option>
+        <option value="active">Active only</option>
+        <option value="paused">Paused</option>
+      </select>
+      <button class="btn btn-g btn-sm" onclick="openM('add-client')">+ Add client</button>
+    </div>
+  </div>
+  <div class="search"><svg viewBox="0 0 20 20"><circle cx="9" cy="9" r="5"/><line x1="13" y1="13" x2="17" y2="17"/></svg><input type="text" id="csearch" placeholder="Search by name, goal..." oninput="renderClients()"></div>
+  <div class="cgrid" id="cgrid"></div>
+</section>
+
+<!-- ═══════════════ WORKOUTS ═══════════════ -->
+
+<section class="page" id="page-workouts">
+  <div class="ph">
+    <div><h1>Log Workout</h1><p class="ph-sub" id="wo-date"></p></div>
+    <div class="ph-actions">
+      <select class="sel" id="wo-client" onchange="loadWoHistory()" style="width:130px"></select>
+    </div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="card">
+        <div class="ch"><h3>Session details</h3><span class="badge bb" id="wo-date-badge"></span></div>
+        <div class="fg"><label>Session type</label>
+          <select class="sel" id="wo-type">
+            <option>Upper body — strength</option><option>Upper body — hypertrophy</option>
+            <option>Lower body — strength</option><option>Lower body — hypertrophy</option>
+            <option>Full body</option><option>Push</option><option>Pull</option><option>Legs</option>
+            <option>Fat loss circuit</option><option>Cardio conditioning</option>
+            <option>S&amp;C class</option><option>Mobility &amp; recovery</option><option>Assessment</option>
+          </select>
+        </div>
+        <div class="fg"><label>Session notes</label><textarea class="ta" id="wo-notes" placeholder="e.g. Energy was great, hit new PR on squats..." rows="2"></textarea></div>
+        <div class="fg"><label>Rating</label>
+          <div style="display:flex;gap:4px" id="rating-stars">
+            <span class="star" data-v="1" onclick="setRating(1)" style="cursor:pointer;font-size:18px">☆</span>
+            <span class="star" data-v="2" onclick="setRating(2)" style="cursor:pointer;font-size:18px">☆</span>
+            <span class="star" data-v="3" onclick="setRating(3)" style="cursor:pointer;font-size:18px">☆</span>
+            <span class="star" data-v="4" onclick="setRating(4)" style="cursor:pointer;font-size:18px">☆</span>
+            <span class="star" data-v="5" onclick="setRating(5)" style="cursor:pointer;font-size:18px">☆</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>Exercises</h3></div>
+        <div class="ex-head"><span>Exercise</span><span>Sets</span><span>Reps</span><span>Weight</span><span></span></div>
+        <div id="ex-rows"></div>
+        <div class="btn-row">
+          <button class="btn btn-sm btn-ghost" onclick="addEx()">+ Add exercise</button>
+          <button class="btn btn-sm btn-g" onclick="logSession()">Save session ↗</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ch"><h3>Session history</h3></div>
+        <div id="wo-history"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MY SPLIT ═══════════════ -->
+
+<section class="page" id="page-mysplit">
+  <div class="ph"><div><h1>My Training Split</h1><p class="ph-sub">Your 4-day upper/lower split</p></div></div>
+  <div class="split-grid" id="split-days"></div>
+  <div class="two">
+    <div class="card" id="split-detail">
+      <div class="ch"><h3 id="split-day-title">Select a day</h3></div>
+      <div id="split-exercises"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Split overview</h3></div>
+      <div id="split-overview"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PROGRESS ═══════════════ -->
+
+<section class="page" id="page-progress">
+  <div class="ph">
+    <div><h1>Progress</h1><p class="ph-sub">Track client results over time</p></div>
+    <select class="sel" id="prog-sel" onchange="renderProgress()" style="width:140px"></select>
+  </div>
+  <div class="stats" id="prog-stats" style="grid-template-columns:repeat(4,1fr)"></div>
+  <div class="two">
+    <div class="card">
+      <div class="ch"><h3>Weight trend</h3><span class="badge bm" id="w-badge"></span></div>
+      <div class="chart-wrap"><canvas id="w-chart" height="160"></canvas></div>
+      <div class="weigh-row">
+        <input type="number" class="inp-sm" id="new-w" placeholder="New weight (kg)" step="0.1">
+        <button class="btn btn-sm btn-ghost" onclick="addWeigh()">+ Log weigh-in</button>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="ch"><h3>Goals &amp; adherence</h3></div>
+        <div id="goals-sec"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>Personal records</h3><button class="btn btn-sm btn-ghost" onclick="openM('add-pr')">+ Add PR</button></div>
+        <div id="prs-sec"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SCHEDULE ═══════════════ -->
+
+<section class="page" id="page-schedule">
+  <div class="ph">
+    <div><h1>Schedule</h1><p class="ph-sub" id="sch-week"></p></div>
+    <button class="btn btn-g btn-sm" onclick="openM('add-session')">+ Book session</button>
+  </div>
+  <div class="card sch-card">
+    <div class="sch-table" id="sch-table"></div>
+  </div>
+  <div class="legend">
+    <span class="leg"><span class="dot" style="background:var(--g)"></span>1-on-1</span>
+    <span class="leg"><span class="dot" style="background:var(--b)"></span>Group S&amp;C</span>
+    <span class="leg"><span class="dot" style="background:var(--o)"></span>Assessment</span>
+  </div>
+</section>
+
+<!-- ═══════════════ NOTES ═══════════════ -->
+
+<section class="page" id="page-notes">
+  <div class="ph">
+    <div><h1>Notes</h1><p class="ph-sub">Client notes, plans, reminders</p></div>
+    <button class="btn btn-g btn-sm" onclick="openM('add-note')">+ New note</button>
+  </div>
+  <div class="search"><svg viewBox="0 0 20 20"><circle cx="9" cy="9" r="5"/><line x1="13" y1="13" x2="17" y2="17"/></svg><input type="text" id="nsearch" placeholder="Search notes..." oninput="renderNotes()"></div>
+  <div id="notes-list"></div>
+</section>
+
+<!-- ═══════════════ NUTRITION ═══════════════ -->
+
+<section class="page" id="page-nutrition">
+  <div class="ph">
+    <div><h1>Nutrition</h1><p class="ph-sub">Meal plans & macro targets</p></div>
+    <div class="ph-actions">
+      <select class="sel" id="nut-client" onchange="renderNutrition()" style="width:140px"></select>
+      <button class="btn btn-g btn-sm" onclick="openM('add-mealplan')">+ New plan</button>
+    </div>
+  </div>
+
+  <!-- Macro summary cards -->
+
+  <div class="stats" id="macro-stats" style="grid-template-columns:repeat(4,1fr)"></div>
+
+  <div class="tabs" id="nut-tabs">
+    <div class="tab active" onclick="switchNutTab('plan',this)">Meal Plan</div>
+    <div class="tab" onclick="switchNutTab('macros',this)">Macro Targets</div>
+    <div class="tab" onclick="switchNutTab('templates',this)">Templates</div>
+    <div class="tab" onclick="switchNutTab('myjack',this)">My Plan (Jack)</div>
+  </div>
+
+  <div id="nut-plan-tab">
+    <div id="meal-plan-grid"></div>
+  </div>
+
+  <div id="nut-macros-tab" style="display:none">
+    <div class="two">
+      <div class="card">
+        <div class="ch"><h3>Daily macro targets</h3><button class="btn btn-sm btn-ghost" onclick="openM('edit-macros')">Edit</button></div>
+        <div id="macro-detail"></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>Macro breakdown</h3></div>
+        <canvas id="macro-chart" height="180"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div id="nut-templates-tab" style="display:none">
+    <div class="two" id="templates-grid"></div>
+  </div>
+
+  <div id="nut-myjack-tab" style="display:none">
+    <div id="jack-plan"></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- MOBILE NAV -->
+
+<div class="mob-nav">
+  <div class="mob-nav-inner">
+    <div class="mob-btn active" id="mn-dashboard" onclick="nav('dashboard',null);setMobActive('dashboard')">
+      <svg viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>Home
+    </div>
+    <div class="mob-btn" id="mn-clients" onclick="nav('clients',null);setMobActive('clients')">
+      <svg viewBox="0 0 20 20"><circle cx="8" cy="6" r="3"/><path d="M2 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="15" cy="7" r="2.5"/><path d="M14 16h4c0-2.2-1.3-4-3-4.5"/></svg>Clients
+    </div>
+    <div class="mob-btn" id="mn-workouts" onclick="nav('workouts',null);setMobActive('workouts')">
+      <svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg>Log
+    </div>
+    <div class="mob-btn" id="mn-mysplit" onclick="nav('mysplit',null);setMobActive('mysplit')">
+      <svg viewBox="0 0 20 20"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M7 3v14M2 8h5M2 12h5"/></svg>Split
+    </div>
+    <div class="mob-btn" id="mn-progress" onclick="nav('progress',null);setMobActive('progress')">
+      <svg viewBox="0 0 20 20"><polyline points="3,14 7,9 11,11 15,5 17,7"/></svg>Progress
+    </div>
+    <div class="mob-btn" id="mn-nutrition" onclick="nav('nutrition',null);setMobActive('nutrition')">
+      <svg viewBox="0 0 20 20"><path d="M10 3c-3 0-6 2.5-6 6 0 2.5 1.5 4.5 3 5.5V17h6v-2.5c1.5-1 3-3 3-5.5 0-3.5-3-6-6-6z"/></svg>Food
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<div class="mbg" id="mbg" onclick="closeM()"></div>
+
+<div class="modal" id="modal-add-client">
+  <div class="mh"><h2>Add new client</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr"><div class="fg"><label>First name</label><input class="inp" id="nfn" placeholder="Sarah"></div><div class="fg"><label>Last name</label><input class="inp" id="nln" placeholder="Smith"></div></div>
+  <div class="fr"><div class="fg"><label>Goal</label><select class="sel" id="ngoal"><option>Fat loss</option><option>Muscle gain</option><option>Strength</option><option>General fitness</option><option>Rehabilitation</option></select></div><div class="fg"><label>Sessions/week</label><select class="sel" id="nfreq"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div></div>
+  <div class="fr"><div class="fg"><label>Start weight (kg)</label><input class="inp" id="nsw" type="number" placeholder="85"></div><div class="fg"><label>Target weight (kg)</label><input class="inp" id="ntw" type="number" placeholder="75"></div></div>
+  <div class="fr"><div class="fg"><label>Email</label><input class="inp" id="nemail" type="email" placeholder="sarah@email.com"></div><div class="fg"><label>Phone</label><input class="inp" id="nphone" placeholder="+27 82 000 0000"></div></div>
+  <div class="fg"><label>Notes</label><textarea class="ta" id="nnotes" placeholder="Goals, injuries, anything relevant..."></textarea></div>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="saveClient()">Add client ↗</button></div>
+</div>
+
+<div class="modal" id="modal-client-detail">
+  <div class="mh"><h2 id="det-name"></h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div id="det-body"></div>
+  <div class="mf"><button class="btn btn-ghost btn-danger" onclick="archiveClient()">Toggle active</button><button class="btn btn-g" onclick="closeM()">Done</button></div>
+</div>
+
+<div class="modal" id="modal-add-session">
+  <div class="mh"><h2>Book session</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr"><div class="fg"><label>Client</label><select class="sel" id="bk-client"></select></div><div class="fg"><label>Day</label><select class="sel" id="bk-day"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option></select></div></div>
+  <div class="fr"><div class="fg"><label>Time</label><input class="inp" id="bk-time" type="time" value="07:00"></div><div class="fg"><label>Type</label><select class="sel" id="bk-type"><option>1-on-1</option><option>S&C Class</option><option>Assessment</option></select></div></div>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="bookSession()">Book ↗</button></div>
+</div>
+
+<div class="modal" id="modal-add-note">
+  <div class="mh"><h2>New note</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr"><div class="fg"><label>Title</label><input class="inp" id="nt-title" placeholder="e.g. Darren — programme update"></div><div class="fg"><label>Client (optional)</label><select class="sel" id="nt-client"><option value="">General</option></select></div></div>
+  <div class="fg"><label>Note</label><textarea class="ta" id="nt-body" placeholder="Write your note here..." rows="4"></textarea></div>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="saveNote()">Save note ↗</button></div>
+</div>
+
+<div class="modal" id="modal-add-pr">
+  <div class="mh"><h2>Log new PR</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr"><div class="fg"><label>Lift</label><input class="inp" id="pr-lift" placeholder="e.g. Squat"></div><div class="fg"><label>Weight / value</label><input class="inp" id="pr-val" placeholder="e.g. 120kg"></div></div>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="savePR()">Save PR ↗</button></div>
+</div>
+
+<div class="modal" id="modal-add-mealplan">
+  <div class="mh"><h2>Create meal plan</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr">
+    <div class="fg"><label>Plan name</label><input class="inp" id="mp-name" placeholder="e.g. Week 1 cut"></div>
+    <div class="fg"><label>Goal</label><select class="sel" id="mp-goal"><option>Fat loss</option><option>Muscle gain</option><option>Maintenance</option><option>Recomp</option></select></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Daily calories</label><input class="inp" id="mp-cals" type="number" placeholder="e.g. 2200"></div>
+    <div class="fg"><label>Meals per day</label><select class="sel" id="mp-meals"><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Protein (g)</label><input class="inp" id="mp-prot" type="number" placeholder="180"></div>
+    <div class="fg"><label>Carbs (g)</label><input class="inp" id="mp-carbs" type="number" placeholder="220"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Fats (g)</label><input class="inp" id="mp-fats" type="number" placeholder="70"></div>
+    <div class="fg"><label>Template</label><select class="sel" id="mp-template"><option value="none">Start blank</option><option value="cut">Fat loss template</option><option value="bulk">Muscle gain template</option><option value="maintenance">Maintenance template</option></select></div>
+  </div>
+  <div class="fg"><label>Notes / restrictions</label><textarea class="ta" id="mp-notes" placeholder="e.g. No dairy, high protein focus..."></textarea></div>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="saveMealPlan()">Create plan ↗</button></div>
+</div>
+
+<div class="modal" id="modal-edit-macros">
+  <div class="mh"><h2>Edit macro targets</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr">
+    <div class="fg"><label>Daily calories</label><input class="inp" id="em-cals" type="number"></div>
+    <div class="fg"><label>Protein (g)</label><input class="inp" id="em-prot" type="number"></div>
+  </div>
+  <div class="fr">
+    <div class="fg"><label>Carbs (g)</label><input class="inp" id="em-carbs" type="number"></div>
+    <div class="fg"><label>Fats (g)</label><input class="inp" id="em-fats" type="number"></div>
+  </div>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="saveEditedMacros()">Save ↗</button></div>
+</div>
+
+<div class="modal modal-wide" id="modal-add-meal">
+  <div class="mh"><h2 id="add-meal-title">Add meal</h2><button class="mc" onclick="closeM()">✕</button></div>
+  <div class="fr">
+    <div class="fg"><label>Meal name</label><input class="inp" id="meal-name" placeholder="e.g. Breakfast"></div>
+    <div class="fg"><label>Time</label><input class="inp" id="meal-time" type="time" value="07:00"></div>
+  </div>
+  <div id="meal-food-rows"></div>
+  <button class="btn btn-sm btn-ghost" onclick="addFoodRow()" style="margin-top:6px">+ Add food item</button>
+  <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="saveMeal()">Save meal ↗</button></div>
+</div>
+
+<div class="toast" id="toast"><div class="tdot"></div><span id="toast-msg"></span></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const DC = [
+  {id:1,fn:'Jack',ln:'B',goal:'Muscle gain',freq:4,sw:120,tw:95,email:'jack@jackedbyjack.com',phone:'+27 82 000 0000',active:true,avatar:'JB',color:'g',notes:'That\'s me! 4-day upper/lower split. Lost 55kg transformation.',isMe:true},
+  {id:2,fn:'Darren',ln:'',goal:'Strength',freq:3,sw:95,tw:85,email:'darren@email.com',phone:'+27 82 111 0001',active:true,avatar:'DA',color:'g',notes:''},
+  {id:3,fn:'Lizelle',ln:'',goal:'Fat loss',freq:2,sw:78,tw:65,email:'lizelle@email.com',phone:'+27 82 111 0002',active:true,avatar:'LI',color:'b',notes:''},
+  {id:4,fn:'Clarissa',ln:'',goal:'Muscle gain',freq:3,sw:62,tw:68,email:'clarissa@email.com',phone:'+27 82 111 0003',active:true,avatar:'CL',color:'o',notes:''},
+  {id:5,fn:'Anton',ln:'',goal:'Strength',freq:2,sw:102,tw:92,email:'anton@email.com',phone:'+27 82 111 0004',active:true,avatar:'AN',color:'g',notes:''},
+  {id:6,fn:'Pip',ln:'',goal:'General fitness',freq:2,sw:70,tw:66,email:'pip@email.com',phone:'+27 82 111 0005',active:true,avatar:'PI',color:'b',notes:''},
+  {id:7,fn:'Jacques',ln:'',goal:'Fat loss',freq:3,sw:110,tw:90,email:'jacques@email.com',phone:'+27 82 111 0006',active:false,avatar:'JA',color:'o',notes:'On pause — family commitments'},
+  {id:8,fn:'Joshua',ln:'',goal:'Muscle gain',freq:4,sw:74,tw:80,email:'joshua@email.com',phone:'+27 82 111 0007',active:true,avatar:'JO',color:'g',notes:''},
+  {id:9,fn:'Jono',ln:'',goal:'Fat loss',freq:2,sw:88,tw:78,email:'jono@email.com',phone:'+27 82 111 0008',active:true,avatar:'JN',color:'b',notes:''},
+  {id:10,fn:'Mikayla',ln:'',goal:'Fat loss',freq:3,sw:72,tw:62,email:'mikayla@email.com',phone:'+27 82 111 0009',active:true,avatar:'MI',color:'o',notes:''},
+];
+
+const DW = {
+  1:[120,117,114,111,108,105,102,100,98,95],
+  2:[95,93,92,91,90,89.5,89],3:[78,76.5,75,74,73,72.5,72.5],
+  4:[62,62.5,63,63.5,64,64,64],5:[102,101,100,99,98.5,98,98],
+  6:[70,69.8,69.5,69.2,69,69,69],7:[110,108,106,105,104,103.5,103],
+  8:[74,74.5,75,76,76.5,77,77],9:[88,87,86,85.5,85,84.5,84],
+  10:[72,71.2,70.4,69.8,69,68.7,68.4]
+};
+
+const DS = [
+  {id:1,clientId:1,date:'27 Mar',type:'Upper body — strength',rating:5,notes:'Massive session. Hit some big weights.',exercises:[
+    {name:'Smith Row',sets:4,reps:8,weight:'2 plates + 10kg + 5kg'},{name:'Single arm cable extension',sets:3,reps:6,weight:'42kg'},
+    {name:'Single arm OH cable extension',sets:3,reps:7,weight:'36kg'},{name:'Preacher curl machine',sets:3,reps:5,weight:'2 + 5kg + 2.5kg plates'},
+    {name:'Unilateral lat pulldown',sets:3,reps:6,weight:'3 plates + 5kg + 2.5kg'},{name:'Incline chest press machine',sets:3,reps:9,weight:'3 plates each side'},
+    {name:'Lying shoulder press machine',sets:3,reps:9,weight:'1.5 plates each side'},{name:'Pec deck',sets:3,reps:5,weight:'100kg'},
+    {name:'Lat pulldown machine',sets:3,reps:7,weight:'95kg'},{name:'Bench press',sets:4,reps:6,weight:'105kg'}
+  ]},
+  {id:2,clientId:1,date:'26 Mar',type:'Lower body — strength',rating:5,notes:'Best lower day in months.',exercises:[
+    {name:'Leg extension',sets:4,reps:6,weight:'65kg'},{name:'Hack squat',sets:3,reps:6,weight:'2 plates each side'},
+    {name:'Standing hamstring curl',sets:3,reps:9,weight:'1.5 plates each side'},{name:'Lying hamstring curl',sets:3,reps:5,weight:'102.5kg'},
+    {name:'Hip thrust',sets:4,reps:9,weight:'3 + 5kg plates each side'},{name:'Abductors',sets:3,reps:9,weight:'102.5kg'},
+    {name:'Adductors',sets:3,reps:6,weight:'117.5kg + 2.5kg plate'},{name:'Cable lateral raises',sets:3,reps:5,weight:'24kg'},
+    {name:'Incline abductors',sets:3,reps:9,weight:'2.5 plates each side'},{name:'Rope pushdown',sets:3,reps:8,weight:'51kg'},
+    {name:'OH rope extension',sets:3,reps:7,weight:'42kg'},{name:'Back extension',sets:4,reps:7,weight:'50kg bar'},
+    {name:'Smith RDL',sets:4,reps:6,weight:'4 plates each side'},{name:'Hip press',sets:3,reps:7,weight:'80kg'},
+    {name:'TG shoulder press machine',sets:3,reps:8,weight:'65kg'},{name:'Squats',sets:3,reps:10,weight:'120kg'},
+    {name:'Standing calf raises',sets:4,reps:7,weight:'125kg + 5kg each side'},{name:'Ab crunch',sets:3,reps:6,weight:'80kg'},
+    {name:'Leg press narrow stance',sets:3,reps:5,weight:'6 plates each side'},{name:'Preacher curl on bench',sets:3,reps:5,weight:'20kg'}
+  ]},
+  {id:3,clientId:2,date:'25 Mar',type:'Lower body — strength',rating:4,notes:'Good energy.',exercises:[{name:'Squats',sets:4,reps:6,weight:'100kg'},{name:'Romanian deadlift',sets:3,reps:8,weight:'70kg'},{name:'Leg press',sets:3,reps:12,weight:'120kg'}]},
+  {id:4,clientId:3,date:'24 Mar',type:'Fat loss circuit',rating:3,notes:'',exercises:[{name:'KB swing',sets:4,reps:15,weight:'20kg'},{name:'Burpee',sets:3,reps:10,weight:'BW'},{name:'Barbell row',sets:3,reps:12,weight:'40kg'}]},
+  {id:5,clientId:4,date:'26 Mar',type:'Lower body — strength',rating:5,notes:'New squat PR!',exercises:[{name:'Back squat',sets:4,reps:5,weight:'80kg'},{name:'Hip thrust',sets:4,reps:10,weight:'90kg'},{name:'Lunge',sets:3,reps:12,weight:'20kg'}]},
+];
+
+const DSCH = [
+  {day:'Mon',time:'07:00',clientId:2,type:'1-on-1'},{day:'Mon',time:'09:00',clientId:3,type:'1-on-1'},{day:'Mon',time:'11:00',clientId:5,type:'1-on-1'},
+  {day:'Tue',time:'07:00',clientId:6,type:'1-on-1'},{day:'Tue',time:'09:00',clientId:4,type:'1-on-1'},{day:'Tue',time:'17:30',clientId:0,type:'S&C Class'},
+  {day:'Wed',time:'08:00',clientId:8,type:'1-on-1'},{day:'Wed',time:'10:00',clientId:9,type:'1-on-1'},
+  {day:'Thu',time:'07:00',clientId:10,type:'1-on-1'},{day:'Thu',time:'09:00',clientId:7,type:'1-on-1'},{day:'Thu',time:'17:30',clientId:0,type:'S&C Class'},
+  {day:'Fri',time:'08:00',clientId:3,type:'1-on-1'},{day:'Fri',time:'10:00',clientId:2,type:'1-on-1'},
+  {day:'Sat',time:'09:00',clientId:9,type:'1-on-1'},
+];
+
+const DPR = {
+  1:[{lift:'Bench press',weight:'105kg'},{lift:'Squats',weight:'120kg'},{lift:'Smith row',weight:'2 plates + 15kg'},{lift:'Lying hamstring curl',weight:'102.5kg'},{lift:'Adductors',weight:'117.5kg'}],
+  2:[{lift:'Squats',weight:'100kg'},{lift:'Deadlift',weight:'120kg'}],
+  3:[{lift:'KB swing',weight:'24kg'},{lift:'Machine row',weight:'55kg'}],
+  4:[{lift:'Back squat',weight:'80kg'},{lift:'Hip thrust',weight:'90kg'},{lift:'Deadlift',weight:'80kg'}],
+  5:[{lift:'Deadlift',weight:'180kg'},{lift:'Bench press',weight:'110kg'}],
+  6:[{lift:'Bench press',weight:'60kg'},{lift:'Back squat',weight:'65kg'}],
+  7:[{lift:'Back squat',weight:'120kg'},{lift:'Deadlift',weight:'140kg'}],
+  8:[{lift:'Bench press',weight:'85kg'},{lift:'Pull-up',weight:'BW+10kg'}],
+  9:[{lift:'Deadlift',weight:'110kg'},{lift:'Back squat',weight:'90kg'}],
+  10:[{lift:'Hip thrust',weight:'80kg'},{lift:'Back squat',weight:'55kg'}],
+};
+
+const DN = [
+  {id:1,title:'Jack — 4-day split programme',clientId:1,body:'Upper A / Lower A / Upper B / Lower B. Focus on progressive overload. Alternate heavy and moderate sessions. Track all weights.',date:'28 Mar'},
+  {id:2,title:'Darren — programming notes',clientId:2,body:'Progressing well on strength. Add 2.5kg to main lifts weekly. Watch knee cave on squats.',date:'25 Mar'},
+  {id:3,title:'Lizelle — fat loss protocol',clientId:3,body:'Calorie deficit + 2x cardio. Keep protein high. Circuit work Tue/Thu, strength Mon/Fri.',date:'22 Mar'},
+];
+
+const MY_SPLIT = {
+  'Upper A':{icon:'💪',focus:'Chest, back, shoulders — heavy',exercises:[
+    {name:'Bench press',sets:'4',reps:'6',note:'Pause at bottom'},
+    {name:'Smith row',sets:'4',reps:'8',note:'Chest to bar'},
+    {name:'Incline chest press machine',sets:'3',reps:'9',note:'Full stretch'},
+    {name:'Lat pulldown machine',sets:'3',reps:'7',note:''},
+    {name:'Unilateral lat pulldown',sets:'3',reps:'6',note:'After smith row'},
+    {name:'Pec deck',sets:'3',reps:'5',note:'All reps touching'},
+    {name:'Lying shoulder press machine',sets:'3',reps:'9',note:''},
+    {name:'TG shoulder press machine',sets:'3',reps:'8',note:'Heavy one'},
+    {name:'Cable lateral raises',sets:'3',reps:'5',note:'Foot forward, 24 setting'},
+  ]},
+  'Lower A':{icon:'🦵',focus:'Quads, hamstrings, glutes — heavy',exercises:[
+    {name:'Back squat',sets:'3',reps:'10',note:'120kg'},
+    {name:'Hack squat',sets:'3',reps:'6',note:'2 plates each side'},
+    {name:'Leg extension',sets:'4',reps:'6',note:'Left leg first'},
+    {name:'Leg press narrow stance',sets:'3',reps:'5',note:'6 plates each side, lowest depth'},
+    {name:'Lying hamstring curl',sets:'3',reps:'5',note:'After quads — 102.5kg'},
+    {name:'Standing hamstring curl',sets:'3',reps:'9',note:'1.5 plates, good form'},
+    {name:'Hip thrust',sets:'4',reps:'9',note:'3 + 5kg plates each side'},
+    {name:'Smith RDL',sets:'4',reps:'6',note:'4 plates each side'},
+    {name:'Standing calf raises',sets:'4',reps:'7',note:'125kg + 5kg each side'},
+    {name:'Ab crunch',sets:'3',reps:'6',note:'80kg'},
+  ]},
+  'Upper B':{icon:'💪',focus:'Arms, back, shoulders — volume',exercises:[
+    {name:'Single arm cable extension',sets:'3',reps:'6',note:'42kg, 6 setting'},
+    {name:'Single arm OH cable extension',sets:'3',reps:'7',note:'36kg, hold arm in place'},
+    {name:'Preacher curl machine',sets:'3',reps:'5',note:'Start right side'},
+    {name:'Preacher curl on bench',sets:'3',reps:'5',note:'20kg'},
+    {name:'Barbell row',sets:'4',reps:'8',note:''},
+    {name:'Rope pushdown',sets:'3',reps:'8',note:'51kg'},
+    {name:'OH rope extension',sets:'3',reps:'7',note:'42kg'},
+    {name:'Back extension',sets:'4',reps:'7',note:'50kg bar — 4,8 sticking out'},
+    {name:'Hip press',sets:'3',reps:'7',note:'80kg'},
+  ]},
+  'Lower B':{icon:'🦵',focus:'Glutes, adductors, calves — volume',exercises:[
+    {name:'Abductors',sets:'3',reps:'9',note:'102.5kg, close handles up straight'},
+    {name:'Adductors',sets:'3',reps:'6',note:'117.5kg + 2.5kg, knees touching'},
+    {name:'Incline abductors',sets:'3',reps:'9',note:'2.5 plates each side'},
+    {name:'Hip thrust',sets:'4',reps:'9',note:'Perfect form'},
+    {name:'Standing calf raises',sets:'4',reps:'7',note:''},
+    {name:'Leg press',sets:'3',reps:'12',note:''},
+    {name:'Back extension',sets:'3',reps:'8',note:''},
+  ]},
+};
+
+const EXERCISES = ['Ab crunch','Abductors','Adductors','Back extension','Back squat','Barbell row','Battle ropes','Bench press','Box jump','Burpee','Cable lateral raises','Cable row','Deadlift','Dumbbell curl','Dumbbell lateral raise','Face pull','Front squat','Good morning','Hack squat','Hip press','Hip thrust','Incline abductors','Incline bench press','Incline chest press machine','Incline dumbbell press','KB swing','Lat pulldown machine','Leg extension','Leg press','Leg press narrow stance','Lunge','Lying hamstring curl','Lying shoulder press machine','Nordic curl','OH rope extension','Pec deck','Plank','Preacher curl machine','Preacher curl on bench','Pull-up','Push-up','Romanian deadlift','Rope pushdown','Seated calf raise','Seated row','Single arm cable extension','Single arm OH cable extension','Sled push','Smith RDL','Smith row','Squat','Standing calf raises','Standing hamstring curl','Step-up','TG shoulder press machine','Tricep dip','Unilateral lat pulldown','Zercher squat'];
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// ── STORAGE ───────────────────────────────────────────────
+function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+
+let clients  = ld('jbj2_c',  DC);
+let weights  = ld('jbj2_w',  DW);
+let sessions = ld('jbj2_s',  DS);
+let schedule = ld('jbj2_sch',DSCH);
+let prs      = ld('jbj2_pr', DPR);
+let notes    = ld('jbj2_n',  DN);
+let exRows   = [];
+let sessionRating = 0;
+let detId    = null;
+let splitDay = null;
+
+
+// ── NUTRITION DATA ────────────────────────────────────────
+const MEAL_TEMPLATES = {
+  cut: {
+    name:'Fat loss template',
+    desc:'High protein, moderate carbs, low fat. Calorie deficit focused.',
+    tags:['High protein','Deficit','Clean eating'],
+    color:'g',
+    meals:[
+      {name:'Breakfast',time:'07:00',foods:[{food:'Eggs (whole)',g:150,p:19,c:1,f:15,cal:220},{food:'Oats',g:60,p:6,c:40,f:4,cal:220},{food:'Banana',g:100,p:1,c:23,f:0,cal:95}]},
+      {name:'Mid-morning',time:'10:00',foods:[{food:'Chicken breast',g:150,p:45,c:0,f:3,cal:200},{food:'Rice cakes',g:30,p:1,c:22,f:0,cal:105}]},
+      {name:'Lunch',time:'13:00',foods:[{food:'Chicken breast',g:200,p:60,c:0,f:4,cal:260},{food:'Brown rice',g:100,p:3,c:42,f:1,cal:190},{food:'Broccoli',g:150,p:4,c:10,f:0,cal:52}]},
+      {name:'Pre-workout',time:'16:00',foods:[{food:'Greek yoghurt',g:200,p:20,c:10,f:0,cal:130},{food:'Apple',g:150,p:0,c:20,f:0,cal:80}]},
+      {name:'Post-workout',time:'19:00',foods:[{food:'Whey protein shake',g:35,p:28,c:5,f:2,cal:150},{food:'Basmati rice',g:150,p:3,c:52,f:1,cal:225},{food:'Salmon fillet',g:150,p:35,c:0,f:12,cal:260}]},
+    ]
+  },
+  bulk: {
+    name:'Muscle gain template',
+    desc:'Calorie surplus, high protein and carbs to support muscle growth.',
+    tags:['Surplus','High carb','High protein'],
+    color:'b',
+    meals:[
+      {name:'Breakfast',time:'07:00',foods:[{food:'Eggs (whole)',g:200,p:25,c:2,f:20,cal:295},{food:'Oats',g:100,p:10,c:68,f:7,cal:375},{food:'Banana',g:150,p:2,c:34,f:0,cal:142},{food:'Peanut butter',g:30,p:7,c:4,f:16,cal:188}]},
+      {name:'Mid-morning',time:'10:00',foods:[{food:'Chicken breast',g:200,p:60,c:0,f:4,cal:260},{food:'White rice',g:150,p:3,c:58,f:0,cal:245},{food:'Avocado',g:80,p:1,c:3,f:12,cal:128}]},
+      {name:'Lunch',time:'13:00',foods:[{food:'Beef mince (lean)',g:200,p:50,c:0,f:14,cal:330},{food:'Pasta',g:150,p:8,c:70,f:1,cal:320},{food:'Mixed veg',g:100,p:2,c:10,f:0,cal:45}]},
+      {name:'Pre-workout',time:'16:00',foods:[{food:'Whey protein shake',g:35,p:28,c:5,f:2,cal:150},{food:'White rice',g:100,p:2,c:42,f:0,cal:180},{food:'Banana',g:120,p:1,c:28,f:0,cal:113}]},
+      {name:'Post-workout',time:'19:00',foods:[{food:'Salmon fillet',g:200,p:46,c:0,f:16,cal:345},{food:'Sweet potato',g:200,p:4,c:40,f:0,cal:180},{food:'Spinach',g:100,p:3,c:3,f:0,cal:23}]},
+      {name:'Night snack',time:'21:30',foods:[{food:'Cottage cheese',g:200,p:26,c:6,f:4,cal:165},{food:'Almonds',g:30,p:6,c:3,f:15,cal:174}]},
+    ]
+  },
+  maintenance: {
+    name:'Maintenance template',
+    desc:'Balanced macros to maintain weight while staying fuelled.',
+    tags:['Balanced','Sustainable','Flexible'],
+    color:'o',
+    meals:[
+      {name:'Breakfast',time:'07:30',foods:[{food:'Eggs (whole)',g:150,p:19,c:1,f:15,cal:220},{food:'Whole wheat toast',g:60,p:6,c:30,f:2,cal:165},{food:'Orange juice',g:200,p:1,c:22,f:0,cal:93}]},
+      {name:'Lunch',time:'13:00',foods:[{food:'Chicken breast',g:180,p:54,c:0,f:4,cal:235},{food:'Brown rice',g:120,p:3,c:50,f:1,cal:228},{food:'Side salad',g:100,p:1,c:5,f:0,cal:20}]},
+      {name:'Snack',time:'16:00',foods:[{food:'Greek yoghurt',g:150,p:15,c:8,f:0,cal:98},{food:'Mixed nuts',g:25,p:5,c:5,f:14,cal:165}]},
+      {name:'Dinner',time:'19:00',foods:[{food:'Beef mince (lean)',g:180,p:45,c:0,f:13,cal:298},{food:'Pasta',g:120,p:6,c:56,f:1,cal:256},{food:'Broccoli',g:150,p:4,c:10,f:0,cal:52}]},
+    ]
+  }
+};
+
+const JACK_PLAN = {
+  goal:'Cutting — target 95kg',
+  calories:2400,
+  protein:220,
+  carbs:200,
+  fats:65,
+  notes:'High protein to preserve muscle while cutting. Carbs timed around training. No junk during week.',
+  meals:[
+    {name:'Breakfast',time:'07:00',foods:[{food:'Eggs (whole)',g:200,p:25,c:1,f:20,cal:295},{food:'Oats',g:80,p:8,c:54,f:5,cal:300},{food:'Banana',g:120,p:1,c:28,f:0,cal:113}]},
+    {name:'Mid-morning',time:'10:00',foods:[{food:'Chicken breast',g:180,p:54,c:0,f:4,cal:235},{food:'Rice cakes',g:40,p:1,c:30,f:0,cal:140}]},
+    {name:'Lunch',time:'13:00',foods:[{food:'Chicken breast',g:200,p:60,c:0,f:4,cal:260},{food:'Brown rice',g:120,p:3,c:50,f:1,cal:228},{food:'Broccoli & spinach',g:200,p:6,c:12,f:0,cal:65}]},
+    {name:'Pre-workout',time:'16:30',foods:[{food:'Whey protein shake',g:35,p:28,c:5,f:2,cal:150},{food:'Apple',g:150,p:0,c:20,f:0,cal:80}]},
+    {name:'Post-workout / dinner',time:'19:30',foods:[{food:'Salmon or beef',g:200,p:46,c:0,f:15,cal:330},{food:'Sweet potato',g:200,p:4,c:40,f:0,cal:180},{food:'Mixed veg',g:150,p:3,c:10,f:0,cal:50}]},
+  ]
+};
+
+const DEFAULT_MACROS = {
+  1:{cals:2400,p:220,c:200,f:65,goal:'Cutting'},
+  2:{cals:2800,p:200,c:280,f:80,goal:'Strength'},
+  3:{cals:1800,p:150,c:160,f:60,goal:'Fat loss'},
+  4:{cals:2000,p:140,c:200,f:65,goal:'Muscle gain'},
+  5:{cals:2600,p:210,c:260,f:75,goal:'Strength'},
+  6:{cals:1900,p:120,c:180,f:65,goal:'General fitness'},
+  7:{cals:2200,p:180,c:200,f:70,goal:'Fat loss'},
+  8:{cals:3000,p:220,c:300,f:85,goal:'Muscle gain'},
+  9:{cals:2000,p:160,c:170,f:65,goal:'Fat loss'},
+  10:{cals:1700,p:130,c:150,f:55,goal:'Fat loss'},
+};
+
+let clientMacros = ld('jbj2_macros', DEFAULT_MACROS);
+let clientMealPlans = ld('jbj2_mealplans', {});
+let addMealPlanId = null;
+let mealFoodRows = [];
+let editingMealIdx = null;
+let currentNutTab = 'plan';
+
+function populateNutSel(){
+  const sel = document.getElementById('nut-client');
+  if(!sel) return;
+  sel.innerHTML = clients.filter(c=>c.active).map(c=>`<option value="${c.id}">${c.fn}${c.isMe?' (me)':''}</option>`).join('');
+}
+
+function switchNutTab(tab, el){
+  currentNutTab = tab;
+  document.querySelectorAll('#nut-tabs .tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('nut-plan-tab').style.display = tab==='plan'?'block':'none';
+  document.getElementById('nut-macros-tab').style.display = tab==='macros'?'block':'none';
+  document.getElementById('nut-templates-tab').style.display = tab==='templates'?'block':'none';
+  document.getElementById('nut-myjack-tab').style.display = tab==='myjack'?'block':'none';
+  if(tab==='macros') renderMacroDetail();
+  if(tab==='templates') renderTemplates();
+  if(tab==='myjack') renderJackPlan();
+}
+
+function renderNutrition(){
+  populateNutSel();
+  const id = +document.getElementById('nut-client').value;
+  const macros = clientMacros[id] || {cals:2000,p:150,c:180,f:60,goal:'General'};
+  const plans = clientMealPlans[id] || [];
+
+  // Macro stat cards
+  document.getElementById('macro-stats').innerHTML=`
+    <div class="sc"><div class="sc-icon g"></div><div class="sc-val">${macros.cals}</div><div class="sc-lbl">Daily calories</div><div class="sc-trend nt">${macros.goal}</div></div>
+    <div class="sc"><div class="sc-icon b"></div><div class="sc-val">${macros.p}g</div><div class="sc-lbl">Protein</div><div class="sc-trend up">${Math.round(macros.p*4/macros.cals*100)}% of cals</div></div>
+    <div class="sc orange"><div class="sc-icon o"></div><div class="sc-val">${macros.c}g</div><div class="sc-lbl">Carbs</div><div class="sc-trend nt">${Math.round(macros.c*4/macros.cals*100)}% of cals</div></div>
+    <div class="sc purple"><div class="sc-icon p"></div><div class="sc-val">${macros.f}g</div><div class="sc-lbl">Fats</div><div class="sc-trend nt">${Math.round(macros.f*9/macros.cals*100)}% of cals</div></div>`;
+
+  // Meal plan tab
+  addMealPlanId = id;
+  if(plans.length){
+    document.getElementById('meal-plan-grid').innerHTML = plans.map((plan,pi)=>`
+      <div class="meal-day">
+        <div class="meal-day-head">
+          <div class="meal-day-title">
+            <span class="badge ${plan.color==='bulk'?'bb':plan.color==='cut'?'bg':'bo'}">${plan.goal}</span>
+            ${plan.name}
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:11px;color:var(--txt3);font-family:var(--mono)">${plan.calories} kcal</span>
+            <button class="btn btn-sm btn-ghost" onclick="openAddMeal(${id},${pi})">+ Meal</button>
+            <button class="btn btn-sm btn-ghost btn-danger" onclick="deletePlan(${id},${pi})">✕</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <span class="mm mm-p">P: ${plan.protein}g</span>
+          <span class="mm mm-c">C: ${plan.carbs}g</span>
+          <span class="mm mm-f">F: ${plan.fats}g</span>
+          ${plan.notes?`<span style="font-size:10px;color:var(--txt3);padding-top:2px">${plan.notes}</span>`:''}
+        </div>
+        ${(plan.meals||[]).map(m=>`
+          <div class="meal-row">
+            <div class="meal-time-badge">${m.time}</div>
+            <div class="meal-info">
+              <div class="meal-name">${m.name}</div>
+              <div class="meal-foods">${m.foods.map(f=>f.food+(f.g?` (${f.g}g)`:'')).join(', ')}</div>
+              <div class="meal-macros">
+                <span class="mm mm-p">P: ${m.foods.reduce((a,f)=>a+(+f.p||0),0)}g</span>
+                <span class="mm mm-c">C: ${m.foods.reduce((a,f)=>a+(+f.c||0),0)}g</span>
+                <span class="mm mm-f">F: ${m.foods.reduce((a,f)=>a+(+f.f||0),0)}g</span>
+                <span class="mm mm-cal">${m.foods.reduce((a,f)=>a+(+f.cal||0),0)} kcal</span>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`).join('');
+  } else {
+    document.getElementById('meal-plan-grid').innerHTML=`
+      <div style="text-align:center;padding:40px 20px;color:var(--txt3)">
+        <div style="font-size:32px;margin-bottom:10px">🥗</div>
+        <div style="font-size:13px;font-weight:600;color:var(--txt2);margin-bottom:6px">No meal plans yet</div>
+        <div style="font-size:11px;margin-bottom:16px">Create one or load from a template</div>
+        <button class="btn btn-g btn-sm" onclick="openM('add-mealplan')">+ Create meal plan</button>
+      </div>`;
+  }
+
+  if(currentNutTab==='macros') renderMacroDetail();
+  if(currentNutTab==='templates') renderTemplates();
+  if(currentNutTab==='myjack') renderJackPlan();
+}
+
+function renderMacroDetail(){
+  const id = +document.getElementById('nut-client')?.value;
+  const m = clientMacros[id] || {cals:2000,p:150,c:180,f:60,goal:'General'};
+  const totalCals = m.p*4 + m.c*4 + m.f*9;
+  document.getElementById('macro-detail').innerHTML=`
+    <div class="macro-ring-wrap">
+      <div class="macro-ring-item"><div class="macro-num" style="color:var(--g)">${m.p}g</div><div class="macro-sub">Protein</div><div class="macro-prog"><div class="macro-fill" style="width:${Math.round(m.p*4/m.cals*100)}%;background:var(--g)"></div></div></div>
+      <div class="macro-ring-item"><div class="macro-num" style="color:var(--b)">${m.c}g</div><div class="macro-sub">Carbs</div><div class="macro-prog"><div class="macro-fill" style="width:${Math.round(m.c*4/m.cals*100)}%;background:var(--b)"></div></div></div>
+      <div class="macro-ring-item"><div class="macro-num" style="color:var(--o)">${m.f}g</div><div class="macro-sub">Fats</div><div class="macro-prog"><div class="macro-fill" style="width:${Math.round(m.f*9/m.cals*100)}%;background:var(--o)"></div></div></div>
+      <div class="macro-ring-item"><div class="macro-num">${m.cals}</div><div class="macro-sub">Total kcal</div></div>
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--txt2);line-height:1.8">
+        <div>Goal: <strong>${m.goal}</strong></div>
+        <div>Protein per kg bodyweight: <strong style="color:var(--g)">${((m.p/(weights[id]?.[weights[id].length-1]||80))).toFixed(1)}g/kg</strong></div>
+        <div>Calories from protein: <strong>${m.p*4} kcal (${Math.round(m.p*4/m.cals*100)}%)</strong></div>
+        <div>Calories from carbs: <strong>${m.c*4} kcal (${Math.round(m.c*4/m.cals*100)}%)</strong></div>
+        <div>Calories from fat: <strong>${m.f*9} kcal (${Math.round(m.f*9/m.cals*100)}%)</strong></div>
+      </div>
+    </div>`;
+  // Draw macro pie chart
+  drawMacroPie(m);
+  // Pre-fill edit modal
+  document.getElementById('em-cals').value=m.cals;
+  document.getElementById('em-prot').value=m.p;
+  document.getElementById('em-carbs').value=m.c;
+  document.getElementById('em-fats').value=m.f;
+}
+
+function drawMacroPie(m){
+  const canvas = document.getElementById('macro-chart');
+  if(!canvas) return;
+  canvas.width = canvas.parentElement.clientWidth||320;
+  canvas.height = 180;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cx=canvas.width/2, cy=85, r=65;
+  const slices=[
+    {val:m.p*4,color:'#39d98a',label:'Protein'},
+    {val:m.c*4,color:'#5b8dee',label:'Carbs'},
+    {val:m.f*9,color:'#f5a623',label:'Fats'},
+  ];
+  const total=slices.reduce((a,s)=>a+s.val,0)||1;
+  let angle=-Math.PI/2;
+  slices.forEach(s=>{
+    const sweep=2*Math.PI*s.val/total;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+sweep);ctx.closePath();
+    ctx.fillStyle=s.color;ctx.fill();
+    // label
+    const mid=angle+sweep/2;
+    const lx=cx+Math.cos(mid)*(r+22), ly=cy+Math.sin(mid)*(r+22);
+    ctx.fillStyle='rgba(150,150,150,0.8)';ctx.font='10px Consolas,monospace';ctx.textAlign='center';
+    ctx.fillText(Math.round(s.val/total*100)+'%',lx,ly);
+    angle+=sweep;
+  });
+  // donut hole
+  ctx.beginPath();ctx.arc(cx,cy,r*0.55,0,Math.PI*2);
+  ctx.fillStyle='var(--bg2)';ctx.fill();
+  ctx.fillStyle='var(--txt)';ctx.font='bold 14px Consolas,monospace';ctx.textAlign='center';
+  ctx.fillText(total+' kcal',cx,cy+5);
+}
+
+function renderTemplates(){
+  const grid = document.getElementById('templates-grid');
+  if(!grid) return;
+  grid.innerHTML = Object.entries(MEAL_TEMPLATES).map(([key,t])=>`
+    <div class="template-card" onclick="applyTemplate('${key}')">
+      <h4>${t.name}</h4>
+      <p>${t.desc}</p>
+      <div class="template-tag">${t.tags.map(tg=>`<span class="badge ${t.color==='g'?'bg':t.color==='b'?'bb':'bo'}">${tg}</span>`).join('')}</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--txt3)">${t.meals.length} meals · click to apply to current client</div>
+    </div>`).join('');
+}
+
+function applyTemplate(key){
+  const id = +document.getElementById('nut-client').value;
+  const t = MEAL_TEMPLATES[key];
+  if(!clientMealPlans[id]) clientMealPlans[id]=[];
+  const c = clients.find(x=>x.id===id);
+  const macros = clientMacros[id]||{cals:2000,p:150,c:180,f:60};
+  clientMealPlans[id].push({
+    name:t.name, goal:t.tags[0], color:key,
+    calories:macros.cals, protein:macros.p, carbs:macros.c, fats:macros.f,
+    notes:'', meals: JSON.parse(JSON.stringify(t.meals))
+  });
+  sv('jbj2_mealplans',clientMealPlans);
+  switchNutTab('plan',document.querySelector('#nut-tabs .tab'));
+  renderNutrition();
+  toast('Template applied for '+(c?c.fn:'client')+' ✓');
+}
+
+function renderJackPlan(){
+  const jp = JACK_PLAN;
+  const totalMealCals = jp.meals.reduce((a,m)=>a+m.foods.reduce((b,f)=>b+(+f.cal||0),0),0);
+  document.getElementById('jack-plan').innerHTML=`
+    <div class="card" style="margin-bottom:14px">
+      <div class="ch"><h3>Jack's cutting plan</h3><span class="badge bg">${jp.goal}</span></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <span class="mm mm-cal" style="font-size:12px;padding:4px 10px">${jp.calories} kcal</span>
+        <span class="mm mm-p" style="font-size:12px;padding:4px 10px">P: ${jp.protein}g</span>
+        <span class="mm mm-c" style="font-size:12px;padding:4px 10px">C: ${jp.carbs}g</span>
+        <span class="mm mm-f" style="font-size:12px;padding:4px 10px">F: ${jp.fats}g</span>
+      </div>
+      <div style="font-size:11px;color:var(--txt2);background:var(--bg3);padding:10px 12px;border-radius:var(--rad);border:1px solid var(--border);line-height:1.6">${jp.notes}</div>
+    </div>
+    ${jp.meals.map(m=>`
+      <div class="meal-day" style="margin-bottom:10px">
+        <div class="meal-row" style="border-bottom:none;padding-top:0">
+          <div class="meal-time-badge">${m.time}</div>
+          <div class="meal-info">
+            <div class="meal-name">${m.name}</div>
+            ${m.foods.map(f=>`
+              <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--txt2)">${f.food}${f.g?` <span style="color:var(--txt3)">(${f.g}g)</span>`:''}</span>
+                <span style="display:flex;gap:6px;font-family:var(--mono)">
+                  <span style="color:var(--g)">${f.p}p</span>
+                  <span style="color:var(--b)">${f.c}c</span>
+                  <span style="color:var(--o)">${f.f}f</span>
+                  <span style="color:var(--txt3)">${f.cal}kcal</span>
+                </span>
+              </div>`).join('')}
+            <div class="meal-macros" style="margin-top:6px">
+              <span class="mm mm-p">P: ${m.foods.reduce((a,f)=>a+(+f.p||0),0)}g</span>
+              <span class="mm mm-c">C: ${m.foods.reduce((a,f)=>a+(+f.c||0),0)}g</span>
+              <span class="mm mm-f">F: ${m.foods.reduce((a,f)=>a+(+f.f||0),0)}g</span>
+              <span class="mm mm-cal">${m.foods.reduce((a,f)=>a+(+f.cal||0),0)} kcal</span>
+            </div>
+          </div>
+        </div>
+      </div>`).join('')}`;
+}
+
+function saveMealPlan(){
+  const id = addMealPlanId || +document.getElementById('nut-client').value;
+  const name = document.getElementById('mp-name').value.trim();
+  const template = document.getElementById('mp-template').value;
+  if(!name){toast('Enter a plan name');return;}
+  if(!clientMealPlans[id]) clientMealPlans[id]=[];
+  const baseMeals = template!=='none' ? JSON.parse(JSON.stringify(MEAL_TEMPLATES[template]?.meals||[])) : [];
+  clientMealPlans[id].push({
+    name, goal:document.getElementById('mp-goal').value, color:template,
+    calories:+document.getElementById('mp-cals').value||2000,
+    protein:+document.getElementById('mp-prot').value||150,
+    carbs:+document.getElementById('mp-carbs').value||180,
+    fats:+document.getElementById('mp-fats').value||60,
+    notes:document.getElementById('mp-notes').value.trim(),
+    meals:baseMeals
+  });
+  sv('jbj2_mealplans',clientMealPlans);
+  ['mp-name','mp-cals','mp-prot','mp-carbs','mp-fats','mp-notes'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  closeM(); renderNutrition();
+  toast('Meal plan created ✓');
+}
+
+function deletePlan(clientId,planIdx){
+  if(!confirm('Delete this meal plan?')) return;
+  clientMealPlans[clientId].splice(planIdx,1);
+  sv('jbj2_mealplans',clientMealPlans);
+  renderNutrition();toast('Plan deleted');
+}
+
+function openAddMeal(clientId, planIdx){
+  addMealPlanId = clientId;
+  editingMealIdx = planIdx;
+  document.getElementById('add-meal-title').textContent='Add meal to plan';
+  mealFoodRows = [{food:'',g:0,p:0,c:0,f:0,cal:0}];
+  renderFoodRows();
+  openM('add-meal');
+}
+
+function renderFoodRows(){
+  document.getElementById('meal-food-rows').innerHTML=`
+    <div class="food-head"><span>Food item</span><span>Amount(g)</span><span>Protein</span><span>Carbs</span><span>Fat</span><span></span></div>`+
+  mealFoodRows.map((r,i)=>`
+    <div class="food-row-inp">
+      <input type="text" value="${r.food}" placeholder="e.g. Chicken breast" onchange="mealFoodRows[${i}].food=this.value">
+      <input type="number" value="${r.g||''}" placeholder="150" onchange="mealFoodRows[${i}].g=+this.value">
+      <input type="number" value="${r.p||''}" placeholder="p" onchange="mealFoodRows[${i}].p=+this.value">
+      <input type="number" value="${r.c||''}" placeholder="c" onchange="mealFoodRows[${i}].c=+this.value">
+      <input type="number" value="${r.f||''}" placeholder="f" onchange="mealFoodRows[${i}].f=+this.value;mealFoodRows[${i}].cal=Math.round(mealFoodRows[${i}].p*4+mealFoodRows[${i}].c*4+mealFoodRows[${i}].f*9)">
+      <button class="rm-ex" onclick="mealFoodRows.splice(${i},1);renderFoodRows()">×</button>
+    </div>`).join('');
+}
+
+function addFoodRow(){mealFoodRows.push({food:'',g:0,p:0,c:0,f:0,cal:0});renderFoodRows();}
+
+function saveMeal(){
+  const name=document.getElementById('meal-name').value.trim();
+  const time=document.getElementById('meal-time').value;
+  if(!name){toast('Enter a meal name');return;}
+  const foods=mealFoodRows.filter(r=>r.food.trim());
+  if(!foods.length){toast('Add at least one food');return;}
+  foods.forEach(f=>{f.cal=Math.round((+f.p||0)*4+(+f.c||0)*4+(+f.f||0)*9);});
+  if(!clientMealPlans[addMealPlanId]?.[editingMealIdx]?.meals)
+    clientMealPlans[addMealPlanId][editingMealIdx].meals=[];
+  clientMealPlans[addMealPlanId][editingMealIdx].meals.push({name,time,foods});
+  sv('jbj2_mealplans',clientMealPlans);
+  closeM();renderNutrition();
+  toast('Meal added ✓');
+}
+
+function saveEditedMacros(){
+  const id = +document.getElementById('nut-client').value;
+  clientMacros[id]={
+    cals:+document.getElementById('em-cals').value||2000,
+    p:+document.getElementById('em-prot').value||150,
+    c:+document.getElementById('em-carbs').value||180,
+    f:+document.getElementById('em-fats').value||60,
+    goal:clientMacros[id]?.goal||'General'
+  };
+  sv('jbj2_macros',clientMacros);
+  closeM();renderNutrition();
+  toast('Macro targets updated ✓');
+}
+
+// ── NAV ───────────────────────────────────────────────────
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  if(page==='dashboard') renderDash();
+  if(page==='clients')   renderClients();
+  if(page==='workouts')  renderWorkouts();
+  if(page==='mysplit')   renderMySplit();
+  if(page==='progress')  {populateProgSel();renderProgress();}
+  if(page==='schedule')  renderSchedule();
+  if(page==='notes')     renderNotes();
+  if(page==='nutrition')  {populateNutSel();renderNutrition();}
+}
+
+function setMobActive(p){
+  document.querySelectorAll('.mob-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('mn-'+p);
+  if(el)el.classList.add('active');
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────
+function renderDash(){
+  const now=new Date();
+  const h=now.getHours();
+  
+  document.getElementById('dash-greeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Jack 👋';
+  document.getElementById('dash-date').textContent=now.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  const ac=clients.filter(c=>c.active);
+  document.getElementById('s-clients').textContent=ac.length;
+  document.getElementById('s-logged').textContent=sessions.length;
+  document.getElementById('nb-clients').textContent=ac.length;
+
+  const todayStr=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][now.getDay()];
+  const todaySch=schedule.filter(s=>s.day===todayStr).sort((a,b)=>a.time.localeCompare(b.time));
+  document.getElementById('td-count').textContent=todaySch.length+' today';
+  document.getElementById('s-week').textContent=schedule.length;
+
+  const nowMins=now.getHours()*60+now.getMinutes();
+  document.getElementById('td-sessions').innerHTML=todaySch.length?todaySch.map(s=>{
+    const c=s.clientId===0?null:clients.find(x=>x.id===s.clientId);
+    const name=s.type==='S&C Class'?'S&C Group Class':(c?c.fn:'Unknown');
+    const [h2,m2]=s.time.split(':').map(Number);
+    const past=nowMins>h2*60+m2;
+    return `<div class="sr"><span class="sr-time">${s.time}</span><div class="sr-dot" style="background:${past?'var(--txt3)':'var(--g)'}"></div><div class="sr-info"><div class="sr-name">${name}</div><div class="sr-type">${s.type}</div></div><span class="badge ${past?'bm':'bg'}">${past?'Done':'Upcoming'}</span></div>`;
+  }).join(''):'<p style="color:var(--txt3);font-size:12px">No sessions scheduled today.</p>';
+
+  const recent=[...sessions].sort((a,b)=>b.id-a.id).slice(0,5);
+  document.getElementById('activity').innerHTML=recent.map(s=>{
+    const c=clients.find(x=>x.id===s.clientId);
+    const stars=s.rating?'★'.repeat(s.rating):'';
+    return `<div class="ai"><div class="ai-dot"></div><span class="ai-time">${s.date}</span><span>${c?c.fn:'Client'} — ${s.type}${stars?` <span style="color:var(--o);font-size:10px">${stars}</span>`:''}`;
+  }).join('');
+
+  // Next session preview (Jack's next split day)
+  const splitDays=Object.keys(MY_SPLIT);
+  const mySessions=sessions.filter(s=>s.clientId===1).length;
+  const nextIdx=mySessions%4;
+  const nextDayName=splitDays[nextIdx];
+  const nextDay=MY_SPLIT[nextDayName];
+  document.getElementById('next-session-preview').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:24px">${nextDay.icon}</span>
+      <div><div style="font-size:13px;font-weight:600">${nextDayName}</div><div style="font-size:11px;color:var(--txt2)">${nextDay.focus}</div></div>
+    </div>
+    ${nextDay.exercises.slice(0,4).map(e=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span>${e.name}</span><span style="color:var(--txt2);font-family:var(--mono)">${e.sets}×${e.reps}</span></div>`).join('')}
+    <div style="margin-top:8px;font-size:10px;color:var(--txt3)">+${nextDay.exercises.length-4} more exercises</div>
+    <button class="btn btn-sm btn-g" style="margin-top:10px;width:100%" onclick="nav('mysplit',document.querySelector('[data-page=mysplit]'))">View full session →</button>`;
+
+  document.getElementById('quick-stats').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:var(--bg3);padding:10px 12px;border-radius:var(--rad);border:1px solid var(--border)"><div style="font-size:10px;color:var(--txt2);margin-bottom:2px">My current weight</div><div style="font-size:16px;font-weight:700;font-family:var(--mono)">${DW[1]?.[DW[1].length-1]??'—'} kg</div></div>
+      <div style="background:var(--bg3);padding:10px 12px;border-radius:var(--rad);border:1px solid var(--border)"><div style="font-size:10px;color:var(--txt2);margin-bottom:2px">Lost total</div><div style="font-size:16px;font-weight:700;font-family:var(--mono);color:var(--g)">${(120-(DW[1]?.[DW[1].length-1]??120)).toFixed(1)} kg</div></div>
+      <div style="background:var(--bg3);padding:10px 12px;border-radius:var(--rad);border:1px solid var(--border)"><div style="font-size:10px;color:var(--txt2);margin-bottom:2px">My sessions</div><div style="font-size:16px;font-weight:700;font-family:var(--mono)">${sessions.filter(s=>s.clientId===1).length}</div></div>
+      <div style="background:var(--bg3);padding:10px 12px;border-radius:var(--rad);border:1px solid var(--border)"><div style="font-size:10px;color:var(--txt2);margin-bottom:2px">Target</div><div style="font-size:16px;font-weight:700;font-family:var(--mono)">95 kg</div></div>
+    </div>`;
+}
+
+// ── CLIENTS ───────────────────────────────────────────────
+function renderClients(){
+  const q=(document.getElementById('csearch')?.value||'').toLowerCase();
+  const f=document.getElementById('client-filter')?.value||'all';
+  let list=clients.filter(c=>{
+    if(f==='active'&&!c.active)return false;
+    if(f==='paused'&&c.active)return false;
+    return(c.fn+' '+c.ln+' '+c.goal).toLowerCase().includes(q);
+  });
+  document.getElementById('cgrid').innerHTML=list.map(c=>{
+    const cw=(weights[c.id]||[c.sw]);
+    const cur=cw[cw.length-1];
+    const pct=c.sw===c.tw?100:Math.min(100,Math.max(0,Math.round(Math.abs(c.sw-cur)/Math.abs(c.sw-c.tw)*100)));
+    const clr={g:'background:var(--gd);color:var(--g);border-color:rgba(57,217,138,.25)',b:'background:var(--bd);color:var(--b);border-color:rgba(91,141,238,.25)',o:'background:var(--od);color:var(--o);border-color:rgba(245,166,35,.25)'}[c.color]||'';
+    return `<div class="cc${c.isMe?' me':''}" onclick="openDet(${c.id})">
+      <div class="cav" style="${clr}">${c.avatar}</div>
+      <div class="cn">${c.fn}${c.ln?' '+c.ln:''}</div>
+      <div class="cm">${c.goal} · ${c.freq}×/wk</div>
+      <span class="badge ${c.active?'bg':'bm'}">${c.active?'Active':'Paused'}</span>
+      ${c.isMe?`<div style="font-size:10px;color:var(--g);margin-top:6px;font-weight:600">55kg transformation 🏆</div>`:''}
+      <div class="pw">
+        <div class="pl"><span>Goal progress</span><span>${pct}%</span></div>
+        <div class="pb"><div class="pf ${c.color}" style="width:${pct}%"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openDet(id){
+  detId=id;
+  const c=clients.find(x=>x.id===id);
+  const cw=weights[id]||[c.sw];
+  const cur=cw[cw.length-1];
+  document.getElementById('det-name').textContent=c.fn+(c.ln?' '+c.ln:'');
+  const sc=sessions.filter(s=>s.clientId===id).length;
+  document.getElementById('det-body').innerHTML=`
+    <div class="dgrid">
+      <div class="df"><div class="dfl">Goal</div><div class="dfv">${c.goal}</div></div>
+      <div class="df"><div class="dfl">Sessions/week</div><div class="dfv">${c.freq}×</div></div>
+      <div class="df"><div class="dfl">Start weight</div><div class="dfv">${c.sw} kg</div></div>
+      <div class="df"><div class="dfl">Current weight</div><div class="dfv">${cur} kg</div></div>
+      <div class="df"><div class="dfl">Target weight</div><div class="dfv">${c.tw} kg</div></div>
+      <div class="df"><div class="dfl">Sessions logged</div><div class="dfv">${sc}</div></div>
+      <div class="df"><div class="dfl">Email</div><div class="dfv" style="font-size:11px">${c.email||'—'}</div></div>
+      <div class="df"><div class="dfl">Phone</div><div class="dfv" style="font-size:11px">${c.phone||'—'}</div></div>
+    </div>
+    ${c.notes?`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad);padding:10px 12px;font-size:12px;color:var(--txt2);line-height:1.5">${c.notes}</div>`:''}
+    ${c.isMe?`<div style="margin-top:10px;padding:10px 12px;background:var(--gd);border:1px solid rgba(57,217,138,.2);border-radius:var(--rad);font-size:12px;color:var(--g);font-weight:500">🏆 55kg transformation — from 120kg to 95kg. This is your story and your credibility.</div>`:''}`;
+  openM('client-detail');
+}
+
+function archiveClient(){
+  const c=clients.find(x=>x.id===detId);
+  if(c){c.active=!c.active;sv('jbj2_c',clients);}
+  closeM();renderClients();
+  toast(c.active?c.fn+' reactivated':c.fn+' archived');
+}
+
+function saveClient(){
+  const fn=document.getElementById('nfn').value.trim();
+  if(!fn){toast('Enter a first name');return;}
+  const colors=['g','b','o'];
+  const id=Date.now();
+  const sw=parseFloat(document.getElementById('nsw').value)||80;
+  const tw=parseFloat(document.getElementById('ntw').value)||70;
+  const nc={id,fn,ln:document.getElementById('nln').value.trim(),goal:document.getElementById('ngoal').value,freq:+document.getElementById('nfreq').value,sw,tw,email:document.getElementById('nemail').value.trim(),phone:document.getElementById('nphone').value.trim(),notes:document.getElementById('nnotes').value.trim(),active:true,avatar:(fn[0]+(document.getElementById('nln').value.trim()[0]||fn[1]||'X')).toUpperCase(),color:colors[clients.length%3]};
+  clients.push(nc);weights[id]=[sw];
+  sv('jbj2_c',clients);sv('jbj2_w',weights);
+  ['nfn','nln','nsw','ntw','nemail','nphone','nnotes'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  closeM();renderClients();
+  document.getElementById('s-clients').textContent=clients.filter(c=>c.active).length;
+  document.getElementById('nb-clients').textContent=clients.filter(c=>c.active).length;
+  toast(fn+' added to your roster 🎉');
+}
+
+// ── WORKOUTS ──────────────────────────────────────────────
+function renderWorkouts(){
+  const sel=document.getElementById('wo-client');
+  sel.innerHTML=clients.map(c=>`<option value="${c.id}">${c.fn}${c.isMe?' (me)':''}</option>`).join('');
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'});
+  document.getElementById('wo-date').textContent='Log a session — '+dateStr;
+  document.getElementById('wo-date-badge').textContent=dateStr;
+  if(exRows.length===0)exRows=[{name:'Back squat',sets:4,reps:6,weight:80},{name:'Romanian deadlift',sets:3,reps:8,weight:60}];
+  renderExRows();loadWoHistory();
+}
+
+let sessionRatingVal=0;
+function setRating(v){
+  sessionRatingVal=v;
+  document.querySelectorAll('.star').forEach(s=>{s.textContent=+s.dataset.v<=v?'★':'☆';s.style.color=+s.dataset.v<=v?'var(--o)':'var(--txt3)';});
+}
+
+function renderExRows(){
+  document.getElementById('ex-rows').innerHTML=exRows.map((e,i)=>`
+    <div class="ex-row">
+      <select onchange="exRows[${i}].name=this.value">${EXERCISES.map(x=>`<option ${x===e.name?'selected':''}>${x}</option>`).join('')}</select>
+      <input type="number" value="${e.sets}" min="1" max="10" onchange="exRows[${i}].sets=+this.value">
+      <input type="number" value="${e.reps}" min="1" max="50" onchange="exRows[${i}].reps=+this.value">
+      <input type="text" value="${e.weight}" placeholder="kg" onchange="exRows[${i}].weight=this.value" style="text-align:left">
+      <button class="rm-ex" onclick="exRows.splice(${i},1);renderExRows()">×</button>
+    </div>`).join('');
+}
+
+function addEx(){exRows.push({name:'Deadlift',sets:3,reps:8,weight:60});renderExRows();}
+
+function loadWoHistory(){
+  const id=+document.getElementById('wo-client')?.value;
+  const list=sessions.filter(s=>s.clientId===id).slice().reverse().slice(0,8);
+  document.getElementById('wo-history').innerHTML=list.length?list.map(s=>`
+    <div class="hi">
+      <div class="hih"><span class="hin">${s.type}</span><span class="hid">${s.date}</span></div>
+      ${s.rating?`<div style="color:var(--o);font-size:11px;margin-bottom:3px">${'★'.repeat(s.rating)}</div>`:''}
+      ${s.notes?`<div class="hit">${s.notes}</div>`:''}
+      <div class="hex">${s.exercises.map(e=>`<span class="ec">${e.name} ${e.sets}×${e.reps}</span>`).join('')}</div>
+    </div>`).join(''):'<p style="color:var(--txt3);font-size:12px">No sessions logged yet.</p>';
+}
+
+function logSession(){
+  const clientId=+document.getElementById('wo-client').value;
+  const type=document.getElementById('wo-type').value;
+  const notes2=document.getElementById('wo-notes').value;
+  const now=new Date();
+  const date=now.toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+  sessions.unshift({id:Date.now(),clientId,date,type,notes:notes2,rating:sessionRatingVal,exercises:JSON.parse(JSON.stringify(exRows))});
+  sv('jbj2_s',sessions);
+  exRows=[];sessionRatingVal=0;
+  document.getElementById('wo-notes').value='';
+  setRating(0);
+  renderWorkouts();
+  document.getElementById('s-logged').textContent=sessions.length;
+  const c=clients.find(x=>x.id===clientId);
+  toast('Session saved for '+(c?c.fn:'client')+' ✓');
+}
+
+// ── MY SPLIT ──────────────────────────────────────────────
+function renderMySplit(){
+  const days=Object.keys(MY_SPLIT);
+  document.getElementById('split-days').innerHTML=days.map((d,i)=>`
+    <div class="split-day" onclick="showSplitDay('${d}')" id="sd-${i}">
+      <div class="sd-icon">${MY_SPLIT[d].icon}</div>
+      <div class="sd-label">Day ${i+1}</div>
+      <div class="sd-name">${d}</div>
+    </div>`).join('');
+  showSplitDay(days[0]);
+  document.getElementById('split-overview').innerHTML=days.map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:16px">${MY_SPLIT[d].icon}</span>
+      <div style="flex:1"><div style="font-size:12px;font-weight:600">${d}</div><div style="font-size:10px;color:var(--txt2)">${MY_SPLIT[d].focus}</div></div>
+      <span style="font-size:10px;color:var(--txt3);font-family:var(--mono)">${MY_SPLIT[d].exercises.length} ex</span>
+    </div>`).join('');
+}
+
+function showSplitDay(dayName){
+  splitDay=dayName;
+  const d=MY_SPLIT[dayName];
+  document.getElementById('split-day-title').textContent=dayName+' — '+d.focus;
+  document.getElementById('split-exercises').innerHTML=d.exercises.map(e=>`
+    <div style="display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;font-size:12px">
+      <span style="font-weight:500">${e.name}</span>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--g);text-align:center">${e.sets}×${e.reps}</span>
+      <span style="font-size:10px;color:var(--txt3);text-align:right">${e.note||''}</span>
+    </div>`).join('')+
+  `<button class="btn btn-g btn-sm" style="margin-top:12px;width:100%" onclick="loadSplitToLogger('${dayName}')">Load into logger →</button>`;
+  document.querySelectorAll('.split-day').forEach((el,i)=>{
+    el.classList.toggle('active-day',Object.keys(MY_SPLIT)[i]===dayName);
+  });
+}
+
+function loadSplitToLogger(dayName){
+  const d=MY_SPLIT[dayName];
+  exRows=d.exercises.map(e=>({name:e.name,sets:+e.sets,reps:+e.reps,weight:0}));
+  document.getElementById('wo-type').value=dayName.includes('Upper')?'Upper body — strength':'Lower body — strength';
+  nav('workouts',document.querySelector('[data-page=workouts]'));
+  renderExRows();
+  toast(dayName+' loaded into logger ✓');
+}
+
+// ── PROGRESS ──────────────────────────────────────────────
+function populateProgSel(){
+  document.getElementById('prog-sel').innerHTML=clients.filter(c=>c.active).map(c=>`<option value="${c.id}">${c.fn}${c.isMe?' (me)':''}</option>`).join('');
+}
+
+function renderProgress(){
+  const id=+document.getElementById('prog-sel').value;
+  const c=clients.find(x=>x.id===id);
+  if(!c)return;
+  const cw=weights[id]||[c.sw];
+  const cur=cw[cw.length-1];
+  const diff=(cur-c.sw).toFixed(1);
+  const sign=diff>=0?'+':'';
+  const toGoal=Math.abs(cur-c.tw).toFixed(1);
+  const pct=c.sw===c.tw?100:Math.min(100,Math.max(0,Math.round(Math.abs(c.sw-cur)/Math.abs(c.sw-c.tw)*100)));
+  const sc=sessions.filter(s=>s.clientId===id).length;
+
+  document.getElementById('prog-stats').innerHTML=`
+    <div class="sc"><div class="sc-icon g"><svg viewBox="0 0 20 20"><path d="M10 3v14M6 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><div class="sc-val">${c.sw}</div><div class="sc-lbl">Start (kg)</div></div>
+    <div class="sc blue"><div class="sc-icon b"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></div><div class="sc-val">${cur}</div><div class="sc-lbl">Current (kg)</div><div class="sc-trend ${+diff<=0?'up':'nt'}">${sign}${diff} kg</div></div>
+    <div class="sc orange"><div class="sc-icon o"></div><div class="sc-val">${c.tw}</div><div class="sc-lbl">Target (kg)</div><div class="sc-trend nt">${toGoal} kg to go</div></div>
+    <div class="sc purple"><div class="sc-icon p"></div><div class="sc-val">${sc}</div><div class="sc-lbl">Sessions logged</div></div>`;
+
+  document.getElementById('w-badge').textContent=pct+'% to goal';
+  drawChart(cw,c);
+
+  document.getElementById('goals-sec').innerHTML=`
+    <div class="goal"><div class="goal-lbl"><span>Weight goal</span><span class="goal-pct">${pct}%</span></div><div class="pb"><div class="pf g" style="width:${pct}%"></div></div></div>
+    <div class="goal" style="margin-top:12px"><div class="goal-lbl"><span>Session adherence</span><span class="goal-pct">87%</span></div><div class="pb"><div class="pf b" style="width:87%"></div></div></div>
+    <div class="goal" style="margin-top:12px"><div class="goal-lbl"><span>Programme completion</span><span class="goal-pct">${Math.min(100,sc*4)}%</span></div><div class="pb"><div class="pf o" style="width:${Math.min(100,sc*4)}%"></div></div></div>`;
+
+  const cpr=prs[id]||[];
+  document.getElementById('prs-sec').innerHTML=cpr.length?cpr.map(p=>`
+    <div class="pr"><span class="pr-lift">${p.lift}</span><span class="pr-val">${p.weight}</span></div>`).join('')
+  :'<p style="color:var(--txt3);font-size:11px">No PRs logged yet.</p>';
+}
+
+function drawChart(data,client){
+  const canvas=document.getElementById('w-chart');
+  const wrap=document.getElementById('weight-chart-wrap')||canvas.parentElement;
+  canvas.width=canvas.parentElement.clientWidth||420;
+  canvas.height=160;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const pad={t:20,r:36,b:28,l:44};
+  const W=canvas.width-pad.l-pad.r,H=canvas.height-pad.t-pad.b;
+  const mn=Math.min(...data,client.tw)-2,mx=Math.max(...data)+2,rng=mx-mn||1;
+  const xs=W/Math.max(data.length-1,1);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+H*(i/4);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+W,y);ctx.stroke();
+    ctx.fillStyle='rgba(150,150,150,0.6)';ctx.font='10px JetBrains Mono,monospace';
+    ctx.textAlign='right';ctx.fillText((mx-rng*i/4).toFixed(1),pad.l-6,y+4);
+  }
+
+  // Target line
+  const ty=pad.t+H*(1-(client.tw-mn)/rng);
+  ctx.strokeStyle='rgba(245,166,35,0.4)';ctx.lineWidth=1;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.moveTo(pad.l,ty);ctx.lineTo(pad.l+W,ty);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(245,166,35,0.7)';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillText('Goal',pad.l+W+4,ty+4);
+
+  // Area
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+H);
+  grad.addColorStop(0,'rgba(57,217,138,0.2)');grad.addColorStop(1,'rgba(57,217,138,0)');
+  ctx.beginPath();
+  data.forEach((v,i)=>{const x=pad.l+i*xs,y=pad.t+H*(1-(v-mn)/rng);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.lineTo(pad.l+(data.length-1)*xs,pad.t+H);ctx.lineTo(pad.l,pad.t+H);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+
+  // Line
+  ctx.strokeStyle='#39d98a';ctx.lineWidth=2;ctx.lineJoin='round';
+  ctx.beginPath();
+  data.forEach((v,i)=>{const x=pad.l+i*xs,y=pad.t+H*(1-(v-mn)/rng);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.stroke();
+
+  // Dots
+  data.forEach((v,i)=>{
+    const x=pad.l+i*xs,y=pad.t+H*(1-(v-mn)/rng);
+    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle='#39d98a';ctx.fill();
+    ctx.beginPath();ctx.arc(x,y,1.5,0,Math.PI*2);ctx.fillStyle='#0a0a0a';ctx.fill();
+  });
+
+  // X labels
+  ctx.fillStyle='rgba(150,150,150,0.6)';ctx.font='10px JetBrains Mono,monospace';ctx.textAlign='center';
+  const lc=Math.min(data.length,7);
+  for(let i=0;i<lc;i++){
+    const idx=Math.round(i*(data.length-1)/(lc-1));
+    ctx.fillText('Wk'+(idx+1),pad.l+idx*xs,pad.t+H+16);
+  }
+}
+
+function addWeigh(){
+  const inp=document.getElementById('new-w');
+  const val=parseFloat(inp.value);
+  if(isNaN(val)||val<20||val>300){toast('Enter a valid weight');return;}
+  const id=+document.getElementById('prog-sel').value;
+  if(!weights[id])weights[id]=[];
+  weights[id].push(val);
+  // Update DW too for consistency
+  if(id===1)DW[1]=weights[id];
+  sv('jbj2_w',weights);inp.value='';
+  renderProgress();
+  toast('Weigh-in logged: '+val+' kg ✓');
+}
+
+function savePR(){
+  const lift=document.getElementById('pr-lift').value.trim();
+  const val=document.getElementById('pr-val').value.trim();
+  if(!lift||!val){toast('Fill in both fields');return;}
+  const id=+document.getElementById('prog-sel').value;
+  if(!prs[id])prs[id]=[];
+  prs[id].unshift({lift,weight:val});
+  sv('jbj2_pr',prs);
+  closeM();renderProgress();
+  toast('PR logged: '+lift+' '+val+' 🏆');
+}
+
+// ── SCHEDULE ──────────────────────────────────────────────
+function renderSchedule(){
+  const now=new Date();
+  const mon=new Date(now);
+  const d=now.getDay()||7;
+  mon.setDate(now.getDate()-d+1);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  document.getElementById('sch-week').textContent=mon.toLocaleDateString('en-ZA',{day:'numeric',month:'short'})+' – '+sun.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+
+  const times=[...new Set(schedule.map(s=>s.time))].sort();
+  let html='<div class="sch-hd"></div>';
+  DAYS.forEach(d=>html+=`<div class="sch-hd">${d}</div>`);
+  times.forEach(t=>{
+    html+=`<div class="sch-tm">${t}</div>`;
+    DAYS.forEach(d=>{
+      const slot=schedule.find(s=>s.day===d&&s.time===t);
+      let block='';
+      if(slot){
+        const cl=slot.type==='S&C Class'?'b':slot.type==='Assessment'?'o':'g';
+        const lbl=slot.type==='S&C Class'?'S&C Class':(clients.find(c=>c.id===slot.clientId)?.fn||'?');
+        block=`<div class="sch-block ${cl}">${lbl}<br><span style="font-weight:400;opacity:.7;font-size:9px">${slot.type}</span></div>`;
+      }
+      html+=`<div class="sch-cell">${block}</div>`;
+    });
+  });
+  document.getElementById('sch-table').innerHTML=html;
+  document.getElementById('bk-client').innerHTML=clients.filter(c=>c.active).map(c=>`<option value="${c.id}">${c.fn}</option>`).join('');
+}
+
+function bookSession(){
+  const clientId=+document.getElementById('bk-client').value;
+  const day=document.getElementById('bk-day').value;
+  const time=document.getElementById('bk-time').value;
+  const type=document.getElementById('bk-type').value;
+  schedule.push({day,time,clientId:type==='S&C Class'?0:clientId,type});
+  sv('jbj2_sch',schedule);closeM();renderSchedule();
+  const c=clients.find(x=>x.id===clientId);
+  toast('Booked: '+(type==='S&C Class'?'S&C Class':c?.fn)+' '+day+' @ '+time);
+}
+
+// ── NOTES ─────────────────────────────────────────────────
+function renderNotes(){
+  const q=(document.getElementById('nsearch')?.value||'').toLowerCase();
+  const list=notes.filter(n=>(n.title+' '+n.body).toLowerCase().includes(q));
+  const ntSel=document.getElementById('nt-client');
+  if(ntSel)ntSel.innerHTML='<option value="">General</option>'+clients.map(c=>`<option value="${c.id}">${c.fn}</option>`).join('');
+  document.getElementById('notes-list').innerHTML=list.length?list.map(n=>{
+    const c=n.clientId?clients.find(x=>x.id===n.clientId):null;
+    return`<div class="note-card">
+      <div class="note-title">${n.title}${c?`<span class="badge bg">${c.fn}</span>`:'<span class="badge bm">General</span>'}</div>
+      <div class="note-preview">${n.body.slice(0,120)}${n.body.length>120?'…':''}</div>
+      <div class="note-date">${n.date}</div>
+    </div>`;
+  }).join(''):'<p style="color:var(--txt3);font-size:12px;margin-top:12px">No notes yet. Add one above.</p>';
+}
+
+function saveNote(){
+  const title=document.getElementById('nt-title').value.trim();
+  const body=document.getElementById('nt-body').value.trim();
+  if(!title||!body){toast('Fill in title and note');return;}
+  const clientId=+document.getElementById('nt-client').value||null;
+  const now=new Date();
+  notes.unshift({id:Date.now(),title,body,clientId,date:now.toLocaleDateString('en-ZA',{day:'numeric',month:'short'})});
+  sv('jbj2_n',notes);
+  ['nt-title','nt-body'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  closeM();renderNotes();
+  toast('Note saved ✓');
+}
+
+// ── MODALS ────────────────────────────────────────────────
+function openM(name){document.getElementById('mbg').classList.add('open');document.getElementById('modal-'+name).classList.add('open');}
+function closeM(){document.getElementById('mbg').classList.remove('open');document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'));}
+
+// ── TOAST ─────────────────────────────────────────────────
+let tt;
+function toast(msg){
+  const t=document.getElementById('toast');
+  clearTimeout(tt);document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');tt=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  renderDash();
+  document.getElementById('mbg').addEventListener('click',closeM);
+  window.addEventListener('resize',()=>{
+    if(document.getElementById('page-progress').classList.contains('active'))renderProgress();
+  });
+});
+</script>
+
+</body>
+</html>
