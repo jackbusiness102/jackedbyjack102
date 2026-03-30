@@ -162,6 +162,7 @@ select option{background:#1a1a1a}
 /* MODAL */
 .mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100}
 .mbg.open{display:block}
+.modal-wide{width:620px}
 .modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rad3);padding:22px 24px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;z-index:101}
 .modal.open{display:block;animation:slideUp .2s ease}
 @keyframes slideUp{from{opacity:0;transform:translate(-50%,-44%)}to{opacity:1;transform:translate(-50%,-46%)}}
@@ -408,12 +409,21 @@ select option{background:#1a1a1a}
   <div class="mf"><button class="btn btn-ghost" onclick="closeM()">Cancel</button><button class="btn btn-g" onclick="addClient()">Add client ↗</button></div>
 </div>
 
-<div class="modal" id="modal-client-detail">
+<div class="modal modal-wide" id="modal-client-detail">
   <div class="mh"><h2 id="det-name"></h2><button class="mc" onclick="closeM()">✕</button></div>
   <div id="det-body"></div>
+  <div style="margin-top:16px">
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="btn btn-sm" onclick="detTab('overview')" id="dtab-overview" style="background:var(--gd);color:var(--g)">Overview</button>
+      <button class="btn btn-sm btn-ghost" onclick="detTab('workouts')" id="dtab-workouts">Workouts</button>
+      <button class="btn btn-sm btn-ghost" onclick="detTab('prs')" id="dtab-prs">PRs</button>
+      <button class="btn btn-sm btn-ghost" onclick="detTab('weight')" id="dtab-weight">Weight</button>
+    </div>
+    <div id="det-tab-content"></div>
+  </div>
   <div class="mf">
     <button class="btn btn-ghost btn-danger" onclick="toggleClientActive()">Toggle active</button>
-    <button class="btn btn-ghost" onclick="openMsgFromDetail()">Message client</button>
+    <button class="btn btn-ghost" onclick="openMsgFromDetail()">Message</button>
     <button class="btn btn-g" onclick="closeM()">Done</button>
   </div>
 </div>
@@ -490,6 +500,7 @@ async function loadApp(user) {
   renderDash();
   loadClients();
   subscribeMessages();
+  subscribeMilestones();
 }
 
 // ── NAV ──────────────────────────────────────────────────
@@ -599,8 +610,87 @@ async function openClientDetail(id) {
       <div class="df"><div class="dfl">Phone</div><div class="dfv" style="font-size:11px">${c.phone || '—'}</div></div>
     </div>
     ${c.notes ? `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad);padding:10px 12px;font-size:12px;color:var(--txt2)">${c.notes}</div>` : ''}`;
+  detTab('overview');
   openM('client-detail');
 }
+
+let currentDetClientId = null;
+
+function detTab(tab) {
+  ['overview','workouts','prs','weight'].forEach(t => {
+    const btn = document.getElementById('dtab-'+t);
+    if (btn) { btn.style.background=''; btn.style.color=''; btn.classList.add('btn-ghost'); btn.classList.remove('btn-g'); }
+  });
+  const activeBtn = document.getElementById('dtab-'+tab);
+  if (activeBtn) { activeBtn.style.background='var(--gd)'; activeBtn.style.color='var(--g)'; activeBtn.classList.remove('btn-ghost'); }
+  
+  const c = allClients.find(x => x.id === detClientId);
+  if (!c) return;
+  currentDetClientId = c.client_id;
+  
+  if (tab === 'overview') {
+    document.getElementById('det-tab-content').innerHTML = '';
+  } else if (tab === 'workouts') {
+    loadDetWorkouts(c.client_id);
+  } else if (tab === 'prs') {
+    loadDetPRs(c.client_id);
+  } else if (tab === 'weight') {
+    loadDetWeight(c.client_id);
+  }
+}
+
+async function loadDetWorkouts(clientId) {
+  const { data } = await sb.from('sessions').select('*').eq('client_id', clientId).order('created_at', {ascending:false}).limit(10);
+  document.getElementById('det-tab-content').innerHTML = data?.length ? data.map(s => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;font-weight:600">${s.type}</span>
+        <span style="font-size:10px;color:var(--txt3);font-family:var(--mono)">${s.date}</span>
+      </div>
+      ${s.rating?`<div style="color:var(--o);font-size:11px;margin-bottom:3px">${'★'.repeat(s.rating)}</div>`:''}
+      ${s.notes?`<div style="font-size:11px;color:var(--txt2);margin-bottom:5px">${s.notes}</div>`:''}
+      ${s.exercises?.length?`
+        <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:4px">
+          <thead><tr>
+            <th style="text-align:left;padding:4px 6px;color:var(--txt3);font-weight:600;border-bottom:1px solid var(--border)">Exercise</th>
+            <th style="text-align:center;padding:4px 6px;color:var(--txt3);font-weight:600;border-bottom:1px solid var(--border)">Sets</th>
+            <th style="text-align:center;padding:4px 6px;color:var(--txt3);font-weight:600;border-bottom:1px solid var(--border)">Reps</th>
+            <th style="text-align:right;padding:4px 6px;color:var(--txt3);font-weight:600;border-bottom:1px solid var(--border)">Weight</th>
+          </tr></thead>
+          <tbody>${s.exercises.map(e=>`<tr>
+            <td style="padding:5px 6px;border-bottom:1px solid var(--border);font-weight:500">${e.name}</td>
+            <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);color:var(--txt2)">${e.sets||'—'}</td>
+            <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:center;font-family:var(--mono);color:var(--txt2)">${e.reps||'—'}</td>
+            <td style="padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono);color:var(--g)">${e.weight||'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>`:''}
+    </div>`).join('') : '<p style="color:var(--txt3);font-size:12px;padding:10px 0">No sessions logged yet</p>';
+}
+
+async function loadDetPRs(clientId) {
+  const { data } = await sb.from('personal_bests').select('*').eq('client_id', clientId).order('logged_at', {ascending:false});
+  const best = {};
+  (data||[]).forEach(p => { if (!best[p.exercise] || p.weight_kg > best[p.exercise].weight_kg) best[p.exercise] = p; });
+  const list = Object.values(best).sort((a,b) => b.weight_kg - a.weight_kg);
+  document.getElementById('det-tab-content').innerHTML = list.length ? list.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--txt2)">${p.exercise}</span>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-weight:600;color:var(--g)">${p.weight}</div>
+        <div style="font-size:10px;color:var(--txt3);font-family:var(--mono)">${new Date(p.logged_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'})}</div>
+      </div>
+    </div>`).join('') : '<p style="color:var(--txt3);font-size:12px;padding:10px 0">No PRs logged yet</p>';
+}
+
+async function loadDetWeight(clientId) {
+  const { data } = await sb.from('weight_logs').select('*').eq('client_id', clientId).order('logged_at', {ascending:false}).limit(12);
+  document.getElementById('det-tab-content').innerHTML = data?.length ? data.map(w=>`
+    <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="font-family:var(--mono);font-weight:600">${w.weight} kg</span>
+      <span style="color:var(--txt3);font-size:11px;font-family:var(--mono)">${new Date(w.logged_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})}</span>
+    </div>`).join('') : '<p style="color:var(--txt3);font-size:12px;padding:10px 0">No weigh-ins logged yet</p>';
+}
+
 
 async function toggleClientActive() {
   const c = allClients.find(x => x.id === detClientId);
@@ -786,10 +876,13 @@ async function loadMessages(clientId) {
     .order('created_at');
   console.log('Messages fetched:', data?.length, error);
   const wrap = document.getElementById('msg-messages');
+  const myId = currentUser.id;
   wrap.innerHTML = data?.length ? data.map(m => {
-    const sent = m.sender_id === currentUser.id;
+    const sent = m.sender_id === myId;
     const time = new Date(m.created_at).toLocaleTimeString('en-ZA', {hour:'2-digit',minute:'2-digit'});
-    return `<div style="display:flex;flex-direction:column;align-items:${sent?'flex-end':'flex-start'}">
+    const label = sent ? 'You' : (allClients.find(c=>c.client_id===m.sender_id)?.profiles?.full_name || 'Client');
+    return `<div style="display:flex;flex-direction:column;align-items:${sent?'flex-end':'flex-start'};margin-bottom:4px">
+      <div style="font-size:10px;color:var(--txt3);margin-bottom:2px;padding:0 4px">${label}</div>
       <div class="msg-bubble ${sent?'sent':'recv'}">${m.content}<div class="msg-time">${time}</div></div>
     </div>`;
   }).join('') : '<div style="text-align:center;color:var(--txt3);font-size:12px;margin-top:40px">No messages yet. Say hi! 👋</div>';
@@ -823,6 +916,30 @@ function subscribeMessages() {
         loadMessages(selectedMsgClientId);
       }
     }).subscribe();
+}
+
+function subscribeMilestones() {
+  sb.channel('coach-milestones').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'milestones' }, payload => {
+    const m = payload.new;
+    const icons = { new_weight_low:'⚖️', new_pr:'🏋️', streak:'🔥', goal_reached:'🎯', first_session:'🌟' };
+    const icon = icons[m.type] || '🏆';
+    const clientName = allClients.find(c => c.client_id === m.client_id)?.profiles?.full_name || 'Client';
+    showCoachMilestone(icon, clientName + ' — ' + m.message);
+  }).subscribe();
+}
+
+function showCoachMilestone(icon, message) {
+  const existing = document.getElementById('coach-milestone-banner');
+  if (existing) existing.remove();
+  const banner = document.createElement('div');
+  banner.id = 'coach-milestone-banner';
+  banner.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a1a1a,#222);border:1px solid #39d98a;border-radius:12px;padding:16px 24px;z-index:300;text-align:center;min-width:300px;max-width:90vw;box-shadow:0 8px 40px rgba(57,217,138,.3);animation:popIn .4s cubic-bezier(.22,1,.36,1)';
+  banner.innerHTML = '<style>@keyframes popIn{from{opacity:0;transform:translateX(-50%) scale(.8)}to{opacity:1;transform:translateX(-50%) scale(1)}}</style>'
+    + '<div style="font-size:32px;margin-bottom:8px">' + icon + '</div>'
+    + '<div style="font-size:14px;font-weight:700;color:#39d98a;margin-bottom:4px">Client Achievement!</div>'
+    + '<div style="font-size:12px;color:#888">' + message + '</div>';
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 6000);
 }
 
 // ── MEAL PLANS ───────────────────────────────────────────
