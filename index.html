@@ -760,20 +760,19 @@ async function addSchedule() {
 async function renderMessages() {
   document.getElementById('msg-clients').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   document.getElementById('msg-clients').innerHTML = allClients.length ? allClients.map(c => `
-    <div class="msg-client-item ${selectedMsgClientId===c.client_id?'active':''}" onclick="selectMsgClient('${c.client_id}','${c.profiles?.full_name||'Client'}')">
+    <div class="msg-client-item ${selectedMsgClientId===c.client_id?'active':''}" onclick="selectMsgClient('${c.client_id}','${c.profiles?.full_name||'Client'}',this)">
       <div class="msg-client-name">${c.profiles?.full_name||'Client'}</div>
       <div class="msg-client-preview">Click to open chat</div>
     </div>`).join('') : '<p style="padding:16px;font-size:12px;color:var(--txt3)">No clients yet</p>';
   if (selectedMsgClientId) selectMsgClient(selectedMsgClientId, allClients.find(c=>c.client_id===selectedMsgClientId)?.profiles?.full_name||'Client');
 }
 
-async function selectMsgClient(clientId, name) {
+async function selectMsgClient(clientId, name, el) {
   selectedMsgClientId = clientId;
   document.getElementById('msg-head').textContent = name;
-  document.querySelectorAll('.msg-client-item').forEach(el => el.classList.remove('active'));
-  event?.currentTarget?.classList?.add('active');
+  document.querySelectorAll('.msg-client-item').forEach(x => x.classList.remove('active'));
+  if (el) el.classList.add('active');
   await loadMessages(clientId);
-  // Mark as read
   await sb.from('messages').update({read:true}).eq('sender_id', clientId).eq('receiver_id', currentUser.id);
 }
 
@@ -804,12 +803,16 @@ async function sendMsg() {
 
 function subscribeMessages() {
   if (msgSub) sb.removeChannel(msgSub);
-  msgSub = sb.channel('messages').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-    if (payload.new.receiver_id === currentUser.id) {
-      document.getElementById('nb-msgs').style.display = 'inline';
-      if (selectedMsgClientId === payload.new.sender_id) loadMessages(selectedMsgClientId);
-    }
-  }).subscribe();
+  msgSub = sb.channel('realtime-messages-coach')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+      if (payload.new.receiver_id === currentUser.id) {
+        document.getElementById('nb-msgs').style.display = 'inline';
+        toast('New message from client!');
+      }
+      if (selectedMsgClientId && (payload.new.sender_id === selectedMsgClientId || payload.new.receiver_id === selectedMsgClientId)) {
+        loadMessages(selectedMsgClientId);
+      }
+    }).subscribe();
 }
 
 // ── MEAL PLANS ───────────────────────────────────────────
