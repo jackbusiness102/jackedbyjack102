@@ -184,11 +184,7 @@ select option{background:#1a1a1a}
 .tdot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0}
 
 /* MOBILE */
-.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:8px 0 12px;z-index:50}
-.mob-nav-inner{display:flex;justify-content:space-around}
-.mob-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;color:var(--txt3);cursor:pointer;font-size:9px;font-weight:600}
-.mob-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.mob-btn.active{color:var(--g)}
+
 
 /* SEARCH */
 .search{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rad);padding:0 12px;margin-bottom:16px}
@@ -238,6 +234,7 @@ select option{background:#1a1a1a}
       <a class="ni" onclick="nav('clients',this)"><svg viewBox="0 0 20 20"><circle cx="8" cy="6" r="3"/><path d="M2 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="15" cy="7" r="2.5"/><path d="M14 16h4c0-2.2-1.3-4-3-4.5"/></svg>Clients<span class="nb" id="nb-clients">0</span></a>
       <div class="sb-sec">Training</div>
       <a class="ni" onclick="nav('workouts',this)"><svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg>Log Workout</a>
+      <a class="ni" onclick="nav('assignworkout',this)"><svg viewBox="0 0 20 20"><path d="M4 4h12v12H4z" rx="2"/><path d="M8 4v12M4 8h4M4 12h4"/></svg>Assign Workout</a>
       <a class="ni" onclick="nav('schedule',this)"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/><line x1="7" y1="2" x2="7" y2="6"/><line x1="13" y1="2" x2="13" y2="6"/></svg>Schedule</a>
       <div class="sb-sec">Communication</div>
       <a class="ni" onclick="nav('messages',this)"><svg viewBox="0 0 20 20"><path d="M3 4h14v10H3z"/><path d="M3 4l7 6 7-6"/></svg>Messages<span class="nb" id="nb-msgs" style="display:none">!</span></a>
@@ -339,6 +336,42 @@ select option{background:#1a1a1a}
       </div>
     </section>
 
+
+    <!-- ASSIGN WORKOUT -->
+    <section class="page" id="page-assignworkout">
+      <div class="ph">
+        <div><h1>Assign Workout</h1><p class="ph-sub">Create and assign sessions to clients</p></div>
+        <select class="sel" id="aw-client" style="width:140px" onchange="loadAssignedWorkouts()"></select>
+      </div>
+      <div class="two">
+        <div>
+          <div class="card">
+            <div class="ch"><h3>Create session</h3></div>
+            <div class="fg"><label>Session type</label>
+              <select class="sel" id="aw-type">
+                <option>Upper body — strength</option><option>Upper body — hypertrophy</option>
+                <option>Lower body — strength</option><option>Lower body — hypertrophy</option>
+                <option>Full body</option><option>Push</option><option>Pull</option><option>Legs</option>
+                <option>Fat loss circuit</option><option>S&amp;C class</option>
+              </select>
+            </div>
+            <div class="fg"><label>Notes for client</label><textarea class="ta" id="aw-notes" placeholder="e.g. Focus on form today, no rushing..." rows="2"></textarea></div>
+            <div class="ch" style="margin-top:4px"><h3>Exercises</h3></div>
+            <div class="ex-head"><span>Exercise</span><span>Sets</span><span>Reps</span><span>Weight</span><span></span></div>
+            <div id="aw-ex-rows"></div>
+            <div style="display:flex;gap:6px;margin-top:10px">
+              <button class="btn btn-sm btn-ghost" onclick="addAwEx()">+ Add exercise</button>
+              <button class="btn btn-sm btn-g" onclick="assignWorkout()">Assign to client ↗</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><h3>Assigned sessions</h3></div>
+          <div id="aw-list"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+      </div>
+    </section>
+
     <!-- SCHEDULE -->
     <section class="page" id="page-schedule">
       <div class="ph">
@@ -384,10 +417,6 @@ select option{background:#1a1a1a}
 </div>
 </div>
 
-<!-- MOBILE NAV -->
-<div class="mob-nav" id="mob-nav" style="display:none">
-  <div class="mob-nav-inner">
-    <div class="mob-btn active" onclick="nav('dashboard',null);mobActive(this)"><svg viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>Home</div>
     <div class="mob-btn" onclick="nav('clients',null);mobActive(this)"><svg viewBox="0 0 20 20"><circle cx="8" cy="6" r="3"/><path d="M2 16c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Clients</div>
     <div class="mob-btn" onclick="nav('workouts',null);mobActive(this)"><svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg>Log</div>
     <div class="mob-btn" onclick="nav('messages',null);mobActive(this)"><svg viewBox="0 0 20 20"><path d="M3 4h14v10H3z"/><path d="M3 4l7 6 7-6"/></svg>Chat</div>
@@ -486,7 +515,7 @@ async function loadApp(user) {
   currentUser = user;
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
-  document.getElementById('mob-nav').style.display = 'block';
+  
 
   // Load profile
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
@@ -880,10 +909,10 @@ async function loadMessages(clientId) {
   wrap.innerHTML = data?.length ? data.map(m => {
     const sent = m.sender_id === myId;
     const time = new Date(m.created_at).toLocaleTimeString('en-ZA', {hour:'2-digit',minute:'2-digit'});
-    const label = sent ? 'You' : (allClients.find(c=>c.client_id===m.sender_id)?.profiles?.full_name || 'Client');
-    return `<div style="display:flex;flex-direction:column;align-items:${sent?'flex-end':'flex-start'};margin-bottom:4px">
-      <div style="font-size:10px;color:var(--txt3);margin-bottom:2px;padding:0 4px">${label}</div>
-      <div class="msg-bubble ${sent?'sent':'recv'}">${m.content}<div class="msg-time">${time}</div></div>
+    const clientName = allClients.find(c=>c.client_id===m.sender_id)?.profiles?.full_name || 'Client';
+    return `<div style="display:flex;flex-direction:column;align-items:${sent?'flex-end':'flex-start'};margin-bottom:8px">
+      <div style="font-size:10px;color:var(--txt3);margin-bottom:3px;padding:0 4px">${sent?'You':clientName}</div>
+      <div style="max-width:75%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;${sent?'background:var(--g);color:#000;border-bottom-right-radius:3px':'background:var(--bg3);color:var(--txt);border-bottom-left-radius:3px'}">${m.content}<div style="font-size:9px;opacity:.6;margin-top:3px">${time}</div></div>
     </div>`;
   }).join('') : '<div style="text-align:center;color:var(--txt3);font-size:12px;margin-top:40px">No messages yet. Say hi! 👋</div>';
   wrap.scrollTop = wrap.scrollHeight;
