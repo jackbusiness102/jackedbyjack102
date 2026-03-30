@@ -759,11 +759,14 @@ async function addSchedule() {
 // ── MESSAGES ─────────────────────────────────────────────
 async function renderMessages() {
   document.getElementById('msg-clients').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  document.getElementById('msg-clients').innerHTML = allClients.length ? allClients.map(c => `
-    <div class="msg-client-item ${selectedMsgClientId===c.client_id?'active':''}" onclick="selectMsgClient('${c.client_id}','${c.profiles?.full_name||'Client'}',this)">
-      <div class="msg-client-name">${c.profiles?.full_name||'Client'}</div>
+  document.getElementById('msg-clients').innerHTML = allClients.length ? allClients.map(c => {
+    const cid = c.client_id;
+    const name = c.profiles?.full_name || 'Client';
+    return `<div class="msg-client-item ${selectedMsgClientId===cid?'active':''}" onclick="selectMsgClient('${cid}','${name}',this)">
+      <div class="msg-client-name">${name}</div>
       <div class="msg-client-preview">Click to open chat</div>
-    </div>`).join('') : '<p style="padding:16px;font-size:12px;color:var(--txt3)">No clients yet</p>';
+    </div>`;
+  }).join('') : '<p style="padding:16px;font-size:12px;color:var(--txt3)">No clients yet</p>';
   if (selectedMsgClientId) selectMsgClient(selectedMsgClientId, allClients.find(c=>c.client_id===selectedMsgClientId)?.profiles?.full_name||'Client');
 }
 
@@ -777,9 +780,11 @@ async function selectMsgClient(clientId, name, el) {
 }
 
 async function loadMessages(clientId) {
-  const { data } = await sb.from('messages').select('*')
+  console.log('Loading messages between coach:', currentUser.id, 'and client:', clientId);
+  const { data, error } = await sb.from('messages').select('*')
     .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${clientId}),and(sender_id.eq.${clientId},receiver_id.eq.${currentUser.id})`)
     .order('created_at');
+  console.log('Messages:', data, 'Error:', error);
   const wrap = document.getElementById('msg-messages');
   wrap.innerHTML = data?.length ? data.map(m => {
     const sent = m.sender_id === currentUser.id;
@@ -797,7 +802,12 @@ async function sendMsg() {
   const content = input.value.trim();
   if (!content) return;
   input.value = '';
-  await sb.from('messages').insert({ sender_id: currentUser.id, receiver_id: selectedMsgClientId, content });
+  const { data, error } = await sb.from('messages').insert({ 
+    sender_id: currentUser.id, 
+    receiver_id: selectedMsgClientId, 
+    content 
+  }).select();
+  console.log('Coach sent msg:', data, error);
   loadMessages(selectedMsgClientId);
 }
 
