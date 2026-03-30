@@ -782,9 +782,9 @@ async function selectMsgClient(clientId, name, el) {
 async function loadMessages(clientId) {
   console.log('Loading messages between coach:', currentUser.id, 'and client:', clientId);
   const { data, error } = await sb.from('messages').select('*')
-    .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${clientId}),and(sender_id.eq.${clientId},receiver_id.eq.${currentUser.id})`)
+    .or('sender_id.eq.' + clientId + ',receiver_id.eq.' + clientId)
     .order('created_at');
-  console.log('Messages:', data, 'Error:', error);
+  console.log('Messages fetched:', data?.length, error);
   const wrap = document.getElementById('msg-messages');
   wrap.innerHTML = data?.length ? data.map(m => {
     const sent = m.sender_id === currentUser.id;
