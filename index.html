@@ -168,7 +168,7 @@ select option{background:#1a1a1a}
 </head>
 <body>
 
-<div id="auth-screen">
+<div id="auth-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
   <div class="auth-wrap">
     <div class="auth-box">
       <div class="auth-logo"><div class="auth-mark">JBJ</div><div class="auth-title"><span>Jacked</span>ByJack — Coach</div></div>
@@ -182,7 +182,7 @@ select option{background:#1a1a1a}
   </div>
 </div>
 
-<div id="main-app" style="display:none" class="app">
+<div id="main-app" style="display:none;height:100vh" class="app">
   <aside class="sidebar">
     <div class="sb-logo"><div class="sb-mark">JBJ</div><div class="sb-title"><span>Jacked</span>ByJack</div></div>
     <nav class="sb-nav">
@@ -436,6 +436,12 @@ async function signOut() {
   await sb.auth.signOut();
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('auth-screen').style.alignItems = 'center';
+  document.getElementById('auth-screen').style.justifyContent = 'center';
+  document.getElementById('auth-screen').style.minHeight = '100vh';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('auth-err').style.display = 'none';
 }
 
 async function loadApp(user) {
@@ -793,13 +799,12 @@ async function selectClient(clientId, name, el) {
 }
 
 async function loadMessages(clientId) {
-  // Fetch messages between coach and this specific client only
-  const { data, error } = await sb.from('messages').select('*')
-    .or(
-      `and(sender_id.eq.${currentUser.id},receiver_id.eq.${clientId}),and(sender_id.eq.${clientId},receiver_id.eq.${currentUser.id})`
-    )
-    .order('created_at');
-  console.log('Messages between coach', currentUser.id, 'and client', clientId, ':', data?.length, error);
+  // Fetch all messages then filter client-side — most reliable approach
+  const { data: sent } = await sb.from('messages').select('*')
+    .eq('sender_id', currentUser.id).eq('receiver_id', clientId);
+  const { data: recv } = await sb.from('messages').select('*')
+    .eq('sender_id', clientId).eq('receiver_id', currentUser.id);
+  const data = [...(sent||[]), ...(recv||[])].sort((a,b) => new Date(a.created_at)-new Date(b.created_at));
   const wrap = document.getElementById('msg-messages');
   const myId = currentUser.id;
   const clientName = allClients.find(c=>c.client_id===clientId)?.profiles?.full_name||'Client';
