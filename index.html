@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -168,6 +169,27 @@ select option{background:#1a1a1a}
 </head>
 <body>
 
+<!-- SPLASH SCREEN -->
+
+<div id="splash-screen" style="position:fixed;inset:0;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000">
+  <div id="splash-inner" style="text-align:center;opacity:0;transform:scale(0.8);transition:all 0.6s cubic-bezier(.22,1,.36,1)">
+    <div style="width:72px;height:72px;background:var(--g);color:#000;font-weight:800;font-size:20px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 40px rgba(57,217,138,.5);animation:pulse 2s ease-in-out infinite">JBJ</div>
+    <div style="font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px"><span style="color:var(--g)">Jacked</span>ByJack</div>
+    <div style="font-size:13px;color:var(--txt3);letter-spacing:2px;text-transform:uppercase">Training Portal</div>
+    <div style="margin-top:40px;display:flex;gap:6px;justify-content:center" id="splash-dots">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:dot 1.2s ease-in-out infinite"></div>
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:dot 1.2s ease-in-out 0.2s infinite"></div>
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:dot 1.2s ease-in-out 0.4s infinite"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(57,217,138,.3)}50%{box-shadow:0 0 50px rgba(57,217,138,.7)}}
+    @keyframes dot{0%,100%{opacity:.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideInApp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</div>
+
 <div id="auth-screen" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
   <div class="auth-wrap">
     <div class="auth-box">
@@ -209,146 +231,149 @@ select option{background:#1a1a1a}
 
   <main class="main">
 
-    <!-- DASHBOARD -->
-    <section class="page active" id="page-dashboard">
-      <div class="ph"><div><h1 id="dash-greeting">Dashboard</h1><p class="ph-sub" id="dash-date"></p></div><div class="ph-act"><button class="btn btn-g btn-sm" onclick="nav('assignworkout',document.querySelector('[onclick*=assignworkout]'))">+ Assign workout</button></div></div>
-      <div class="stats">
-        <div class="sc"><div class="sc-icon g"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div class="sc-val" id="s-clients">—</div><div class="sc-lbl">Active clients</div></div>
-        <div class="sc b"><div class="sc-icon b"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg></div><div class="sc-val" id="s-sessions">—</div><div class="sc-lbl">Sessions logged</div></div>
-        <div class="sc o"><div class="sc-icon o"><svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg></div><div class="sc-val" id="s-pending">—</div><div class="sc-lbl">Pending sessions</div></div>
-        <div class="sc p"><div class="sc-icon p"><svg viewBox="0 0 20 20"><path d="M3 4h14v10H3z"/><path d="M3 4l7 6 7-6"/></svg></div><div class="sc-val" id="s-msgs">—</div><div class="sc-lbl">Unread messages</div></div>
-      </div>
-      <div class="two">
-        <div class="card"><div class="ch"><h3>Today's schedule</h3><span class="badge bg" id="td-count">0</span></div><div id="td-sessions"></div></div>
-        <div class="card"><div class="ch"><h3>Recent activity</h3></div><div id="dash-activity"></div></div>
-      </div>
-    </section>
+```
+<!-- DASHBOARD -->
+<section class="page active" id="page-dashboard">
+  <div class="ph"><div><h1 id="dash-greeting">Dashboard</h1><p class="ph-sub" id="dash-date"></p></div><div class="ph-act"><button class="btn btn-g btn-sm" onclick="nav('assignworkout',document.querySelector('[onclick*=assignworkout]'))">+ Assign workout</button></div></div>
+  <div class="stats">
+    <div class="sc"><div class="sc-icon g"><svg viewBox="0 0 20 20"><circle cx="10" cy="7" r="4"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div class="sc-val" id="s-clients">—</div><div class="sc-lbl">Active clients</div></div>
+    <div class="sc b"><div class="sc-icon b"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2"/><line x1="3" y1="8" x2="17" y2="8"/></svg></div><div class="sc-val" id="s-sessions">—</div><div class="sc-lbl">Sessions logged</div></div>
+    <div class="sc o"><div class="sc-icon o"><svg viewBox="0 0 20 20"><path d="M3 10h2M15 10h2M5 10l2-3 3 6 3-4 2 1"/></svg></div><div class="sc-val" id="s-pending">—</div><div class="sc-lbl">Pending sessions</div></div>
+    <div class="sc p"><div class="sc-icon p"><svg viewBox="0 0 20 20"><path d="M3 4h14v10H3z"/><path d="M3 4l7 6 7-6"/></svg></div><div class="sc-val" id="s-msgs">—</div><div class="sc-lbl">Unread messages</div></div>
+  </div>
+  <div class="two">
+    <div class="card"><div class="ch"><h3>Today's schedule</h3><span class="badge bg" id="td-count">0</span></div><div id="td-sessions"></div></div>
+    <div class="card"><div class="ch"><h3>Recent activity</h3></div><div id="dash-activity"></div></div>
+  </div>
+</section>
 
-    <!-- CLIENTS -->
-    <section class="page" id="page-clients">
-      <div class="ph"><div><h1>Clients</h1><p class="ph-sub">Your coaching roster</p></div><div class="ph-act"><button class="btn btn-g btn-sm" onclick="openM('add-client')">+ Add client</button></div></div>
-      <div class="search"><svg viewBox="0 0 20 20"><circle cx="9" cy="9" r="5"/><line x1="13" y1="13" x2="17" y2="17"/></svg><input type="text" id="csearch" placeholder="Search clients..." oninput="renderClients()"></div>
-      <div class="cgrid" id="cgrid"><div class="loading"><div class="spinner"></div></div></div>
-    </section>
+<!-- CLIENTS -->
+<section class="page" id="page-clients">
+  <div class="ph"><div><h1>Clients</h1><p class="ph-sub">Your coaching roster</p></div><div class="ph-act"><button class="btn btn-g btn-sm" onclick="openM('add-client')">+ Add client</button></div></div>
+  <div class="search"><svg viewBox="0 0 20 20"><circle cx="9" cy="9" r="5"/><line x1="13" y1="13" x2="17" y2="17"/></svg><input type="text" id="csearch" placeholder="Search clients..." oninput="renderClients()"></div>
+  <div class="cgrid" id="cgrid"><div class="loading"><div class="spinner"></div></div></div>
+</section>
 
-    <!-- ASSIGN WORKOUT -->
-    <section class="page" id="page-assignworkout">
-      <div class="ph">
-        <div><h1>Assign Workout</h1><p class="ph-sub">Build and assign sessions to clients</p></div>
-        <div class="ph-act">
-          <select class="sel" id="aw-client" style="width:160px">
-            <option value="">Select client...</option>
+<!-- ASSIGN WORKOUT -->
+<section class="page" id="page-assignworkout">
+  <div class="ph">
+    <div><h1>Assign Workout</h1><p class="ph-sub">Build and assign sessions to clients</p></div>
+    <div class="ph-act">
+      <select class="sel" id="aw-client" style="width:160px">
+        <option value="">Select client...</option>
+      </select>
+    </div>
+  </div>
+  <div class="two">
+    <div>
+      <div class="card">
+        <div class="ch"><h3>Build session</h3></div>
+        <div class="fg"><label>Session type</label>
+          <select class="sel" id="aw-type">
+            <option>Upper body — strength</option><option>Upper body — hypertrophy</option>
+            <option>Lower body — strength</option><option>Lower body — hypertrophy</option>
+            <option>Full body</option><option>Push</option><option>Pull</option><option>Legs</option>
+            <option>Fat loss circuit</option><option>S&amp;C class</option>
           </select>
         </div>
+        <div class="fg"><label>Notes for client</label><textarea class="ta" id="aw-notes" placeholder="e.g. Focus on form, no rushing..." rows="2"></textarea></div>
+        <div class="ch" style="margin-top:6px"><h3>Exercises</h3></div>
+        <div class="ex-head"><span>Exercise</span><span>Sets</span><span>Reps</span><span>Weight</span><span></span></div>
+        <div id="aw-ex-rows"></div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-sm btn-ghost" onclick="addAwEx()">+ Add exercise</button>
+          <button class="btn btn-sm btn-g" onclick="assignWorkout()">Assign to client ↗</button>
+        </div>
       </div>
-      <div class="two">
-        <div>
-          <div class="card">
-            <div class="ch"><h3>Build session</h3></div>
-            <div class="fg"><label>Session type</label>
-              <select class="sel" id="aw-type">
-                <option>Upper body — strength</option><option>Upper body — hypertrophy</option>
-                <option>Lower body — strength</option><option>Lower body — hypertrophy</option>
-                <option>Full body</option><option>Push</option><option>Pull</option><option>Legs</option>
-                <option>Fat loss circuit</option><option>S&amp;C class</option>
-              </select>
-            </div>
-            <div class="fg"><label>Notes for client</label><textarea class="ta" id="aw-notes" placeholder="e.g. Focus on form, no rushing..." rows="2"></textarea></div>
-            <div class="ch" style="margin-top:6px"><h3>Exercises</h3></div>
-            <div class="ex-head"><span>Exercise</span><span>Sets</span><span>Reps</span><span>Weight</span><span></span></div>
-            <div id="aw-ex-rows"></div>
-            <div style="display:flex;gap:6px;margin-top:10px">
-              <button class="btn btn-sm btn-ghost" onclick="addAwEx()">+ Add exercise</button>
-              <button class="btn btn-sm btn-g" onclick="assignWorkout()">Assign to client ↗</button>
-            </div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Assigned (pending)</h3><button class="btn btn-sm btn-ghost" onclick="loadAssignedWorkouts()">↻ Refresh</button></div>
+      <div id="aw-list"><p style="color:var(--txt3);font-size:12px">Select a client to see their pending sessions</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOG SESSION (coach's own) -->
+<section class="page" id="page-logworkout">
+  <div class="ph"><div><h1>Log Session</h1><p class="ph-sub" id="lw-date"></p></div><select class="sel" id="lw-client" style="width:140px" onchange="loadLwHistory()"></select></div>
+  <div class="two">
+    <div>
+      <div class="card">
+        <div class="ch"><h3>Session details</h3></div>
+        <div class="fg"><label>Session type</label>
+          <select class="sel" id="lw-type">
+            <option>Upper body — strength</option><option>Upper body — hypertrophy</option>
+            <option>Lower body — strength</option><option>Lower body — hypertrophy</option>
+            <option>Full body</option><option>Fat loss circuit</option><option>S&amp;C class</option>
+          </select>
+        </div>
+        <div class="fg"><label>Notes</label><textarea class="ta" id="lw-notes" placeholder="Session notes..." rows="2"></textarea></div>
+        <div class="fg"><label>Rating</label>
+          <div style="display:flex;gap:4px" id="lw-stars">
+            <span onclick="setRating(1)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
+            <span onclick="setRating(2)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
+            <span onclick="setRating(3)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
+            <span onclick="setRating(4)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
+            <span onclick="setRating(5)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
           </div>
         </div>
-        <div class="card">
-          <div class="ch"><h3>Assigned (pending)</h3><button class="btn btn-sm btn-ghost" onclick="loadAssignedWorkouts()">↻ Refresh</button></div>
-          <div id="aw-list"><p style="color:var(--txt3);font-size:12px">Select a client to see their pending sessions</p></div>
+        <div class="ch"><h3>Exercises</h3></div>
+        <div class="ex-head"><span>Exercise</span><span>Sets</span><span>Reps</span><span>Weight</span><span></span></div>
+        <div id="lw-ex-rows"></div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-sm btn-ghost" onclick="addLwEx()">+ Add exercise</button>
+          <button class="btn btn-sm btn-g" onclick="saveLoggedSession()">Save session ↗</button>
         </div>
       </div>
-    </section>
+    </div>
+    <div class="card"><div class="ch"><h3>Session history</h3></div><div id="lw-history"></div></div>
+  </div>
+</section>
 
-    <!-- LOG SESSION (coach's own) -->
-    <section class="page" id="page-logworkout">
-      <div class="ph"><div><h1>Log Session</h1><p class="ph-sub" id="lw-date"></p></div><select class="sel" id="lw-client" style="width:140px" onchange="loadLwHistory()"></select></div>
-      <div class="two">
-        <div>
-          <div class="card">
-            <div class="ch"><h3>Session details</h3></div>
-            <div class="fg"><label>Session type</label>
-              <select class="sel" id="lw-type">
-                <option>Upper body — strength</option><option>Upper body — hypertrophy</option>
-                <option>Lower body — strength</option><option>Lower body — hypertrophy</option>
-                <option>Full body</option><option>Fat loss circuit</option><option>S&amp;C class</option>
-              </select>
-            </div>
-            <div class="fg"><label>Notes</label><textarea class="ta" id="lw-notes" placeholder="Session notes..." rows="2"></textarea></div>
-            <div class="fg"><label>Rating</label>
-              <div style="display:flex;gap:4px" id="lw-stars">
-                <span onclick="setRating(1)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
-                <span onclick="setRating(2)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
-                <span onclick="setRating(3)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
-                <span onclick="setRating(4)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
-                <span onclick="setRating(5)" style="cursor:pointer;font-size:20px;color:var(--txt3)">☆</span>
-              </div>
-            </div>
-            <div class="ch"><h3>Exercises</h3></div>
-            <div class="ex-head"><span>Exercise</span><span>Sets</span><span>Reps</span><span>Weight</span><span></span></div>
-            <div id="lw-ex-rows"></div>
-            <div style="display:flex;gap:6px;margin-top:10px">
-              <button class="btn btn-sm btn-ghost" onclick="addLwEx()">+ Add exercise</button>
-              <button class="btn btn-sm btn-g" onclick="saveLoggedSession()">Save session ↗</button>
-            </div>
-          </div>
-        </div>
-        <div class="card"><div class="ch"><h3>Session history</h3></div><div id="lw-history"></div></div>
-      </div>
-    </section>
+<!-- SCHEDULE -->
+<section class="page" id="page-schedule">
+  <div class="ph"><div><h1>Schedule</h1><p class="ph-sub" id="sch-week"></p></div><button class="btn btn-g btn-sm" onclick="openM('add-sched')">+ Book session</button></div>
+  <div class="card" style="padding:0;overflow-x:auto"><div id="sch-table" style="min-width:580px"></div></div>
+  <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--txt2);flex-wrap:wrap">
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--g);display:inline-block"></span>1-on-1</span>
+    <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--b);display:inline-block"></span>Group S&amp;C</span>
+  </div>
+</section>
 
-    <!-- SCHEDULE -->
-    <section class="page" id="page-schedule">
-      <div class="ph"><div><h1>Schedule</h1><p class="ph-sub" id="sch-week"></p></div><button class="btn btn-g btn-sm" onclick="openM('add-sched')">+ Book session</button></div>
-      <div class="card" style="padding:0;overflow-x:auto"><div id="sch-table" style="min-width:580px"></div></div>
-      <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--txt2);flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--g);display:inline-block"></span>1-on-1</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--b);display:inline-block"></span>Group S&amp;C</span>
+<!-- MESSAGES -->
+<section class="page" id="page-messages">
+  <div class="ph"><div><h1>Messages</h1><p class="ph-sub">Chat with your clients</p></div></div>
+  <div class="msg-wrap">
+    <div class="msg-clients" id="msg-clients"><div class="loading"><div class="spinner"></div></div></div>
+    <div class="msg-thread">
+      <div class="msg-thread-head" id="msg-head">Select a client</div>
+      <div class="msg-messages" id="msg-messages"><div style="text-align:center;color:var(--txt3);font-size:12px;margin-top:40px">No conversation selected</div></div>
+      <div class="msg-input-wrap">
+        <input class="msg-input" id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="btn btn-g btn-sm" onclick="sendMsg()">Send</button>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
 
-    <!-- MESSAGES -->
-    <section class="page" id="page-messages">
-      <div class="ph"><div><h1>Messages</h1><p class="ph-sub">Chat with your clients</p></div></div>
-      <div class="msg-wrap">
-        <div class="msg-clients" id="msg-clients"><div class="loading"><div class="spinner"></div></div></div>
-        <div class="msg-thread">
-          <div class="msg-thread-head" id="msg-head">Select a client</div>
-          <div class="msg-messages" id="msg-messages"><div style="text-align:center;color:var(--txt3);font-size:12px;margin-top:40px">No conversation selected</div></div>
-          <div class="msg-input-wrap">
-            <input class="msg-input" id="msg-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()">
-            <button class="btn btn-g btn-sm" onclick="sendMsg()">Send</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MEAL PLANS -->
-    <section class="page" id="page-mealplans">
-      <div class="ph">
-        <div><h1>Meal Plans</h1><p class="ph-sub">Build and assign nutrition plans</p></div>
-        <div class="ph-act">
-          <select class="sel" id="mp-client-sel" style="width:150px" onchange="loadMealPlans()"><option value="">Select client...</option></select>
-          <button class="btn btn-g btn-sm" onclick="openMealBuilder()">+ New plan</button>
-        </div>
-      </div>
-      <div id="mp-list"><p style="color:var(--txt3);font-size:12px">Select a client to see their meal plans</p></div>
-    </section>
+<!-- MEAL PLANS -->
+<section class="page" id="page-mealplans">
+  <div class="ph">
+    <div><h1>Meal Plans</h1><p class="ph-sub">Build and assign nutrition plans</p></div>
+    <div class="ph-act">
+      <select class="sel" id="mp-client-sel" style="width:150px" onchange="loadMealPlans()"><option value="">Select client...</option></select>
+      <button class="btn btn-g btn-sm" onclick="openMealBuilder()">+ New plan</button>
+    </div>
+  </div>
+  <div id="mp-list"><p style="color:var(--txt3);font-size:12px">Select a client to see their meal plans</p></div>
+</section>
+```
 
   </main>
 </div>
 
 <!-- MODALS -->
+
 <div class="mbg" id="mbg" onclick="closeM()"></div>
 
 <div class="modal" id="modal-add-client">
@@ -421,6 +446,34 @@ let currentUser = null, allClients = [], awExRows = [], lwExRows = [], lwRating 
 let selectedMsgClientId = null, detClientId = null, msgSub = null;
 let mbMeals = [], editingPlanId = null, editingPlanClientId = null;
 
+
+// ── SPLASH ────────────────────────────────────────────────
+function initSplash(callback) {
+  const splash = document.getElementById('splash-screen');
+  const inner = document.getElementById('splash-inner');
+  // Animate in
+  setTimeout(() => {
+    inner.style.opacity = '1';
+    inner.style.transform = 'scale(1)';
+  }, 100);
+  // After 2s, fade out and run callback
+  setTimeout(() => {
+    splash.style.transition = 'opacity 0.5s ease';
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.style.display = 'none';
+      callback();
+    }, 500);
+  }, 2200);
+}
+
+function animateAppIn() {
+  const app = document.getElementById('main-app');
+  if (app) {
+    app.style.animation = 'slideInApp 0.4s ease forwards';
+  }
+}
+
 // ── AUTH ─────────────────────────────────────────────────
 async function signIn() {
   const email = document.getElementById('login-email').value.trim();
@@ -430,6 +483,7 @@ async function signIn() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
   if (error) { err.textContent = error.message; err.style.display = 'block'; return; }
   await loadApp(data.user);
+  animateAppIn();
 }
 
 async function signOut() {
@@ -994,10 +1048,38 @@ let tt;
 function toast(msg){const t=document.getElementById('toast');clearTimeout(tt);document.getElementById('toast-msg').textContent=msg;t.classList.add('show');tt=setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ── INIT ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(session) await loadApp(session.user);
+document.addEventListener('DOMContentLoaded',()=>{
+  initSplash(async () => {
+    const {data:{session}}=await sb.auth.getSession();
+    if(session) {
+      await loadApp(session.user);
+      animateAppIn();
+    }
+  });
 });
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+
+<script>
+VANTA.NET({
+  el: "#auth-screen",
+  mouseControls: true,
+  touchControls: true,
+  gyroControls: false,
+  minHeight: 200.00,
+  minWidth: 200.00,
+  scale: 1.00,
+  scaleMobile: 1.00,
+  color: 0x39d98a,
+  backgroundColor: 0x0a0a0a,
+  points: 10,
+  maxDistance: 22,
+  spacing: 18,
+})
+</script>
+
 </body>
 </html>
