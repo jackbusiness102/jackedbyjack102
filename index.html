@@ -411,10 +411,11 @@ function closeM(){document.getElementById(‘mbg’).classList.remove(‘open’
 let tt;
 function toast(msg){const t=document.getElementById(‘toast’);clearTimeout(tt);document.getElementById(‘toast-msg’).textContent=msg;t.classList.add(‘show’);tt=setTimeout(()=>t.classList.remove(‘show’),2800);}
 
+window.onerror=function(msg,src,line){var inner=document.getElementById(‘splash-inner’);if(inner){inner.style.opacity=’1’;inner.style.transform=’scale(1)’;inner.innerHTML=’<div style="color:#e05c5c;font-size:12px;max-width:280px;padding:0 20px;word-break:break-word"><b>JS Error:</b> ‘+msg+’<br><small style="color:#888">line ‘+line+’</small></div>’;}return true;};
 document.addEventListener(‘DOMContentLoaded’,()=>{
 const splash=document.getElementById(‘splash’);
 const inner=document.getElementById(‘splash-inner’);
-setTimeout(()=>{inner.style.opacity=‘1’;inner.style.transform=‘scale(1)’;},100);
+setTimeout(()=>{inner.style.opacity=’1’;inner.style.transform=’scale(1)’;},100);
 setTimeout(async()=>{
 const{data:{session}}=await sb.auth.getSession();
 splash.style.transition=‘opacity 0.4s ease’;
