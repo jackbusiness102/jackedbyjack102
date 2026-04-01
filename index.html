@@ -112,8 +112,11 @@ select option{background:#1a1a1a}
 .msg-wrap{display:flex;height:calc(100vh - 260px);min-height:320px;border:1px solid var(--border);border-radius:var(--rad2);overflow:hidden}
 @media(max-width:650px){
   .msg-wrap{flex-direction:column;height:calc(100vh - 170px);border-radius:var(--rad)}
-  .msg-clients{width:100%;height:72px;border-right:none;border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;flex-shrink:0}
-  .msg-client-item{min-width:130px;max-width:130px;border-bottom:none;border-right:1px solid var(--border);padding:10px 12px}
+  .msg-clients{width:100%;height:56px;border-right:none;border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;flex-shrink:0;scrollbar-width:none}
+  .msg-clients::-webkit-scrollbar{display:none}
+  .msg-client-item{min-width:110px;max-width:110px;border-bottom:none;border-right:1px solid var(--border);padding:0 12px;display:flex;align-items:center;justify-content:center}
+  .msg-client-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:0;text-align:center}
+  .msg-client-preview{display:none}
   .msg-thread{min-height:0;flex:1}
   .msg-messages{padding:10px 12px}
   .msg-input-wrap{padding:10px 12px}
