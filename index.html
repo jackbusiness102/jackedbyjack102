@@ -110,7 +110,14 @@ select option{background:#1a1a1a}
 .rm-ex{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:15px;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px}
 .rm-ex:hover{color:var(--r);background:var(--rd)}
 .msg-wrap{display:flex;height:calc(100vh - 260px);min-height:320px;border:1px solid var(--border);border-radius:var(--rad2);overflow:hidden}
-@media(max-width:700px){.msg-wrap{height:calc(100vh - 200px)}}
+@media(max-width:650px){
+  .msg-wrap{flex-direction:column;height:calc(100vh - 170px);border-radius:var(--rad)}
+  .msg-clients{width:100%;height:72px;border-right:none;border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;display:flex;flex-direction:row;flex-shrink:0}
+  .msg-client-item{min-width:130px;max-width:130px;border-bottom:none;border-right:1px solid var(--border);padding:10px 12px}
+  .msg-thread{min-height:0;flex:1}
+  .msg-messages{padding:10px 12px}
+  .msg-input-wrap{padding:10px 12px}
+}
 .msg-clients{width:200px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0}
 .msg-client-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s}
 .msg-client-item:hover{background:var(--bg3)}
@@ -419,6 +426,9 @@ let tt;
 function toast(msg){const t=document.getElementById('toast');clearTimeout(tt);document.getElementById('toast-msg').textContent=msg;t.classList.add('show');tt=setTimeout(()=>t.classList.remove('show'),2800);}
 
 window.onerror=function(msg,src,line){var inner=document.getElementById('splash-inner');if(inner){inner.style.opacity='1';inner.style.transform='scale(1)';inner.innerHTML='<div style="color:#e05c5c;font-size:12px;max-width:280px;padding:0 20px;word-break:break-word"><b>JS Error:</b> '+msg+'<br><small style="color:#888">line '+line+'</small></div>';}return true;};
+document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
 document.addEventListener('DOMContentLoaded',()=>{
 const splash=document.getElementById('splash');
 const inner=document.getElementById('splash-inner');
